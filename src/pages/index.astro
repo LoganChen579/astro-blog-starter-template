@@ -9,186 +9,165 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		
+		<!-- 强制移动端视口设置，防止页面被缩小 -->
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+
 		<style is:inline>
-			/* === 1. 必须修复的移动端布局问题 === */
-			html, body {
-				width: 100%;
-				max-width: 100vw;
-				overflow-x: hidden; /* 🚫 关键：禁止横向滚动，防止断层 */
-				margin: 0;
-				padding: 0;
+			/* === 1. 核弹级 CSS 重置 (解决手机断层) === */
+			* {
+				box-sizing: border-box; /* 所有的边框和内边距都不会撑大盒子 */
+				max-width: 100%; /* 所有的元素都不准超过屏幕宽 */
 			}
 
-			/* === 2. CSS 纯代码绘制背景 (永不失效) === */
-			.fixed-bg {
+			html, body {
+				margin: 0;
+				padding: 0;
+				width: 100%;
+				overflow-x: hidden; /* 🚫 禁止横向滚动，彻底消灭右侧白边 */
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+				color: #1e293b;
+			}
+
+			/* === 2. 独立的背景层 (z-index: -1) === */
+			.fixed-background {
 				position: fixed;
 				top: 0;
 				left: 0;
-				width: 100%;
-				height: 100%;
+				width: 100vw;
+				height: 100vh;
 				z-index: -1;
-				/* 下面这段代码用 CSS 画出了“晨雾中的山脉” */
-				background: 
-					/* 顶层的噪点纹理，增加胶片质感 */
-					url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E"),
-					/* 迷雾光晕 */
-					radial-gradient(circle at 50% 0%, rgba(224, 231, 255, 0.8) 0%, rgba(248, 250, 252, 0) 60%),
-					/* 模拟山脉的层次 */
-					linear-gradient(180deg, #e0e7ff 0%, #f1f5f9 40%, #cbd5e1 100%);
+				
+				/* 👇 使用 Unsplash 高清源，稳定性极高，必定能加载出来 */
+				background-image: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1200&auto=format&fit=crop');
 				background-size: cover;
-			}
-
-			/* === 3. 全局字体与排版 === */
-			body {
-				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-				color: #1e293b;
-				line-height: 1.6;
-				background-color: transparent;
+				background-position: center;
 			}
 			
-			/* 容器修复：加上 box-sizing 防止 padding 撑破容器 */
-			.container { 
-				width: 100%; 
-				max-width: 1024px; 
-				margin: 0 auto; 
-				padding: 0 20px; 
-				box-sizing: border-box; 
+			/* 这一层是用来给背景加“雾气”的，防止字看不清 */
+			.fixed-overlay {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100vw;
+				height: 100vh;
+				z-index: -1;
+				background: rgba(248, 250, 252, 0.5); /* 50% 的白色遮罩，透出背景 */
+				backdrop-filter: blur(3px);
 			}
 
-			/* === 4. Header 修复 (两端对齐) === */
+			/* === 3. 容器与布局 === */
+			.container {
+				width: 100%;
+				max-width: 1024px;
+				margin: 0 auto;
+				padding: 0 20px;
+				position: relative; /* 确保在背景之上 */
+			}
+
+			/* Header */
 			header {
-				width: 100%; /* 确保铺满 */
-				background: rgba(255, 255, 255, 0.7);
+				background: rgba(255, 255, 255, 0.85);
 				backdrop-filter: blur(12px);
-				-webkit-backdrop-filter: blur(12px);
-				border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+				border-bottom: 1px solid rgba(0,0,0,0.05);
 				position: sticky;
 				top: 0;
 				z-index: 50;
-				padding: 16px 0;
+				padding: 12px 0;
 			}
-			/* 修复 Flex 布局在手机上挤成一团的问题 */
 			.header-inner {
 				display: flex;
 				justify-content: space-between;
 				align-items: center;
-				width: 100%;
 			}
-			.logo-area { 
-				font-weight: 800; 
-				font-size: 1.2rem; 
-				color: #312e81; 
-				display: flex; 
-				align-items: center; 
-				gap: 8px; 
-				white-space: nowrap; /* 防止 Logo 换行 */
+			.logo-area {
+				font-weight: 800;
+				font-size: 1.1rem;
+				color: #4338ca;
+				display: flex;
+				align-items: center;
+				gap: 8px;
 			}
-			.nav-links a {
-				color: #475569;
-				text-decoration: none;
-				font-size: 0.9rem;
-				font-weight: 600;
-				margin-left: 20px;
-			}
+			/* 手机上强制隐藏导航链接，防止挤压 Logo */
+			.nav-links { display: flex; gap: 20px; }
+			.nav-links a { color: #64748b; text-decoration: none; font-weight: 600; font-size: 0.9rem; }
 			
-			/* === 5. 卡片样式 (磨砂感增强) === */
+			/* === 4. 卡片样式 (磨砂质感) === */
 			.glass-card {
-				background: rgba(255, 255, 255, 0.65); /* 透出更多背景 */
+				background: rgba(255, 255, 255, 0.7); /* 70% 不透明，透出山脉 */
 				backdrop-filter: blur(16px);
-				-webkit-backdrop-filter: blur(16px);
-				border: 1px solid rgba(255, 255, 255, 0.8);
-				box-shadow: 0 8px 32px rgba(30, 41, 59, 0.05);
-				border-radius: 24px;
-				padding: 40px;
-				margin-bottom: 40px;
-				width: 100%; /* 确保卡片不溢出 */
-				box-sizing: border-box;
+				border-radius: 20px;
+				border: 1px solid rgba(255, 255, 255, 0.6);
+				box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+				padding: 30px;
+				margin-bottom: 30px;
 			}
 
-			/* Hero 文字 */
-			.hero-section { padding: 60px 20px; text-align: center; }
-			h1 {
-				font-size: 2.8rem;
-				font-weight: 900;
-				color: #1e293b;
-				margin: 0 0 20px;
-				letter-spacing: -0.02em;
-			}
+			/* Hero */
+			.hero-section { padding: 60px 0 40px; text-align: center; }
+			h1 { font-size: 2.5rem; margin: 0 0 20px; line-height: 1.2; color: #0f172a; font-weight: 900; }
 			.text-indigo { color: #4f46e5; }
 
-			/* 公式 Grid 适配 */
-			.formula-grid { 
-				display: flex; 
-				gap: 20px; 
-				margin-top: 30px; 
-				flex-wrap: wrap; /* 允许换行 */
-			}
+			/* Grid */
+			.formula-grid { display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 30px; flex-wrap: wrap; }
 			.formula-item {
-				flex: 1;
-				min-width: 200px; /* 手机上会自动变成一列 */
-				background: rgba(255, 255, 255, 0.5);
-				border: 1px solid rgba(255,255,255,0.6);
-				padding: 24px;
-				border-radius: 16px;
+				flex: 1; 
+				min-width: 180px; /* 手机上自动换行 */
+				background: rgba(255,255,255,0.6); 
+				padding: 20px; 
+				border-radius: 12px; 
 				text-align: center;
 			}
-			.multiply { font-size: 24px; color: #94a3b8; display: flex; align-items: center; justify-content: center; }
+			.multiply { font-size: 20px; color: #94a3b8; }
 
-			/* 视频卡片 */
+			/* Video Card */
 			.video-card {
-				background: #0f172a;
-				border-radius: 24px;
-				padding: 32px;
+				background: #1e1b4b; /* 深靛蓝 */
 				color: white;
-				margin-bottom: 40px;
-				position: relative;
-				overflow: hidden;
-				box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.3);
+				border-radius: 20px;
+				padding: 30px;
+				margin-bottom: 30px;
+				box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 			}
 			.video-btn {
-				display: inline-block; background: #4f46e5; color: white; 
-				padding: 10px 20px; border-radius: 8px; text-decoration: none; 
-				margin-top: 20px; font-size: 0.9rem; font-weight: 600;
+				display: inline-block; background: #6366f1; color: white; padding: 10px 20px; 
+				border-radius: 8px; text-decoration: none; margin-top: 15px; font-weight: bold;
 			}
 
-			/* CTA 区域 */
+			/* CTA */
 			.cta-section {
-				background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
-				padding: 48px 24px;
-				border-radius: 24px;
-				text-align: center;
+				background: linear-gradient(to right, #4f46e5, #7c3aed);
 				color: white;
-				margin-top: 60px;
-				box-shadow: 0 20px 40px rgba(67, 56, 202, 0.25);
+				padding: 40px 20px;
+				border-radius: 20px;
+				text-align: center;
+				margin-top: 50px;
 			}
 			.cta-btn {
-				background: white; color: #4338ca; padding: 14px 32px; 
-				border-radius: 12px; font-weight: bold; text-decoration: none; 
-				display: inline-flex; align-items: center; gap: 8px; margin-top: 24px;
+				display: inline-block; background: white; color: #4f46e5; 
+				padding: 14px 30px; border-radius: 12px; text-decoration: none; 
+				font-weight: bold; margin-top: 20px;
+				box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 			}
 
-			/* === 📱 移动端专项修复 === */
+			/* === 📱 针对手机的专项修复 === */
 			@media (max-width: 768px) {
-				h1 { font-size: 2rem; }
-				.glass-card { padding: 24px; } /* 减小内边距 */
-				.formula-grid { flex-direction: column; gap: 12px; }
-				.multiply { transform: rotate(90deg); height: 20px; } /* 乘号旋转 */
+				h1 { font-size: 2rem; } /* 缩小标题 */
+				.nav-links { display: none; } /* 隐藏导航 */
+				.glass-card { padding: 20px; } /* 减小内边距 */
+				.hero-section { padding: 40px 0 30px; }
+				.formula-grid { flex-direction: column; } /* 竖排 */
+				.multiply { transform: rotate(90deg); margin: 5px 0; } /* 旋转乘号 */
 				
-				/* 隐藏导航链接，只留 Logo 和 CTA */
-				.nav-links { display: none; } 
-				
-				/* 让 Footer 和 Header 撑满 */
-				header, footer { width: 100%; }
-				
-				.cta-section { padding: 32px 20px; }
-				.hero-desc { font-size: 1rem; }
+				/* 修复 Logo 挤压 */
+				.logo-area span { font-size: 1rem; }
 			}
 		</style>
 	</head>
 	<body>
 		
-		<!-- 🌌 背景层：纯 CSS 绘制的迷雾山脉 -->
-		<div class="fixed-bg"></div>
+		<!-- 🌌 1. 背景图 (绝对定位，永远在最底层) -->
+		<div class="fixed-background"></div>
+		<div class="fixed-overlay"></div>
 
 		<header>
 			<div class="container header-inner">
@@ -197,94 +176,66 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 					<span>Logan制作</span>
 				</div>
 				<nav class="nav-links">
-					<a href="#" class="active">核心理念</a>
-					<a href="/guide">开始探索</a>
+					<a href="#">核心理念</a>
+					<a href="/guide" style="color:#4f46e5;">开始探索</a>
 				</nav>
 			</div>
 		</header>
 
 		<main class="container" style="padding-bottom: 80px;">
 			
-			<!-- Hero Section -->
+			<!-- Hero -->
 			<section class="hero-section">
-				<div style="display:inline-block; background:rgba(224, 231, 255, 0.6); color:#3730a3; padding:4px 12px; border-radius:50px; font-size:12px; font-weight:700; margin-bottom:24px; border:1px solid rgba(255,255,255,0.5);">
-					✨ 基于八木仁平自我认知方法论
+				<div style="display:inline-block; background:rgba(224,231,255,0.8); color:#3730a3; padding:4px 12px; border-radius:99px; font-size:12px; font-weight:700; margin-bottom:20px;">
+					✨ 八木仁平方法论
 				</div>
-				<h1>不要只是努力，<br class="md:hidden" /><span class="text-indigo">做出正确的选择</span></h1>
-				<p class="hero-desc" style="color: #475569; max-width: 600px; margin: 0 auto;">
-					建立这个网站的初衷，是深受老高视频启发。
+				<h1>不要只是努力，<br /><span class="text-indigo">做出正确的选择</span></h1>
+				<p style="color:#475569; max-width:500px; margin:0 auto; font-size:1.05rem;">
 					AI 助手将引导你生成属于你的“人生使用说明书”。
 				</p>
 			</section>
 
-			<!-- Formula Card -->
+			<!-- Formula -->
 			<section class="glass-card">
-				<h2 style="text-align:center; margin-top:0; color:#334155;">真正的人生之路公式</h2>
+				<h2 style="text-align:center; margin-top:0; font-size:1.5rem; color:#334155;">人生之路公式</h2>
 				<div class="formula-grid">
 					<div class="formula-item">
-						<div style="color:#be123c; font-weight:bold; font-size:1.1rem;">❤️ 热情</div>
-						<div style="font-size:12px; color:#881337; opacity:0.8;">喜欢的、感兴趣的</div>
+						<div style="font-size:1.5rem;">❤️</div>
+						<h3 style="margin:5px 0 0; color:#be123c;">热情</h3>
+						<p style="font-size:12px; color:#881337; margin:0;">喜欢的</p>
 					</div>
 					<div class="multiply">×</div>
 					<div class="formula-item">
-						<div style="color:#b45309; font-weight:bold; font-size:1.1rem;">⚡ 才能</div>
-						<div style="font-size:12px; color:#78350f; opacity:0.8;">擅长的、无意识做的</div>
+						<div style="font-size:1.5rem;">⚡</div>
+						<h3 style="margin:5px 0 0; color:#b45309;">才能</h3>
+						<p style="font-size:12px; color:#78350f; margin:0;">擅长的</p>
 					</div>
 					<div class="multiply">×</div>
 					<div class="formula-item">
-						<div style="color:#0e7490; font-weight:bold; font-size:1.1rem;">💎 价值观</div>
-						<div style="font-size:12px; color:#164e63; opacity:0.8;">在乎的、底线</div>
+						<div style="font-size:1.5rem;">💎</div>
+						<h3 style="margin:5px 0 0; color:#0e7490;">价值观</h3>
+						<p style="font-size:12px; color:#155e75; margin:0;">在乎的</p>
 					</div>
-				</div>
-				<div style="text-align:center; margin-top:24px; padding-top:20px; border-top:1px solid rgba(0,0,0,0.05); font-weight:bold; color:#4338ca;">
-					= 真正的人生之路
 				</div>
 			</section>
 
-			<!-- Video Section -->
+			<!-- Video -->
 			<div class="video-card">
-				<h3 style="margin:0 0 12px; font-size:1.4rem;">找到你的“人生之路”</h3>
-				<p style="color:#94a3b8; margin-bottom:20px; font-size:0.9rem;">这一期你应该多看几遍 | 老高与小茉</p>
+				<h3 style="margin-top:0;">找到你的“人生之路”</h3>
+				<p style="color:#a5b4fc; font-size:0.9rem; margin-bottom:20px;">老高与小茉 Mr & Mrs Gao</p>
 				<a href="https://b23.tv/Pedon5x" target="_blank" class="video-btn">
-					📺 观看完整视频 (Bilibili)
+					📺 观看视频
 				</a>
 			</div>
 
-			<!-- Content Summary -->
-			<section class="glass-card">
-				<h3 style="margin-top:0; display:flex; align-items:center; gap:10px; color:#312e81;">
-					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-					深度解析
-				</h3>
-				<ul style="padding-left:0; list-style:none; margin-top:20px;">
-					<li style="margin-bottom:16px; display:flex; gap:12px;">
-						<span style="color:#10b981;">✓</span>
-						<span style="font-size:0.95rem;"><strong>打破误区：</strong> 很多人痛苦不是因为不努力，而是在错误的方向死磕。</span>
-					</li>
-					<li style="margin-bottom:16px; display:flex; gap:12px;">
-						<span style="color:#10b981;">✓</span>
-						<span style="font-size:0.95rem;"><strong>过滤器思维：</strong> 用价值观把“错的”筛掉，剩下的就是路。</span>
-					</li>
-					<li style="display:flex; gap:12px;">
-						<span style="color:#10b981;">✓</span>
-						<span style="font-size:0.95rem;"><strong>治愈焦虑：</strong> 你的缺点往往就是你的天赋。</span>
-					</li>
-				</ul>
-			</section>
-
 			<!-- CTA -->
 			<section class="cta-section">
-				<h2 style="margin:0 0 16px; font-size: 1.8rem;">准备好编写你的说明书了吗？</h2>
-				<p style="opacity: 0.9; font-size: 1rem; margin-bottom: 0;">
-					我们的 AI 助手将引导你逐一回答关键问题。
-				</p>
-				<a href="/guide" class="cta-btn">
-					🚀 开始 AI 引导式探索
-				</a>
+				<h2 style="margin:0 0 10px; font-size:1.6rem;">准备好了吗？</h2>
+				<p style="opacity:0.9; font-size:1rem;">不需要面对白纸发愁。</p>
+				<a href="/guide" class="cta-btn">🚀 开始探索</a>
 			</section>
 
 		</main>
-		
 		<Footer />
 	</body>
 </html>
