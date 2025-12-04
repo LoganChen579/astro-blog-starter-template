@@ -1,254 +1,257 @@
----
-import BaseHead from '../components/BaseHead.astro';
-import { SITE_TITLE } from '../consts';
----
+<script>
+    // ==========================================
+    // 1. 定义题目与“老高”的独家引导逻辑
+    // ==========================================
+    const questions = [
+        // --- 价值观篇 ---
+        {
+            id: 1,
+            text: "你尊敬的人是谁？(★ 起点问题)",
+            hintPrompt: "请基于老高的观点引导我：不要想太久，直觉是谁就是谁。不管是名人、父母还是漫画人物(如路飞)。重要的是此时此刻脑子里蹦出来的第一个名字。不要筛选，不要管他够不够伟大。"
+        },
+        {
+            id: 2,
+            text: "为什么尊敬他？/ 喜欢他什么地方？",
+            hintPrompt: "请基于老高的观点引导我：名字不重要，重要的是‘为什么’。引导我找出具体的形容词关键词。是因为他‘自由’？还是‘从未放弃’？这些形容词才是我的价值观。"
+        },
+        {
+            id: 3,
+            text: "青春期对你影响很大的事情是什么？",
+            hintPrompt: "请基于老高的观点引导我：回想初高中时期，有没有对三观产生冲击的事？那时候感性最丰富。有没有觉得特别不公平的事？或者让你瞬间觉得‘我就要这样活’的时刻？"
+        },
+        {
+            id: 4,
+            text: "你觉得现在社会有什么不足的地方？",
+            hintPrompt: "请基于老高的观点引导我：你觉得社会缺什么？或者看不惯哪里？引导我思考：如果有魔法，我想改变社会的一个什么现状？我想补全的那个东西，就是我最看重的价值。"
+        },
+        {
+            id: 5,
+            text: "在朋友眼里你是一个看中什么东西的人？",
+            hintPrompt: "请基于老高的观点引导我：强调这题必须问别人。我自己想的不算。引导我去发微信问死党：‘你觉得我最看重什么？’ 他们的回答往往才是真相。"
+        },
+        {
+            id: 6,
+            text: "给身边人的建议？/ 不希望朋友给你什么样的建议？",
+            hintPrompt: "请基于老高的观点引导我：我经常挂在嘴边劝别人的话是什么？或者别人劝我什么时，我心里会想‘烦死了别管我’？（例如：劝我要合群还是劝我要上进？）"
+        },
 
-<!doctype html>
-<html lang="zh-cn">
-	<head>
-		<BaseHead title={`深度探索 | ${SITE_TITLE}`} description="AI人生解析" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-        <script src="https://cdn.staticfile.net/tailwindcss/3.3.5/tailwind.min.js"></script>
-		<style is:inline>
-            html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; background-color: #fdfbf7; }
-            .fade-in { animation: fadeIn 0.6s ease-out; }
-            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-            .modal-backdrop { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
-            .main-wrapper { padding-top: 20px; padding-bottom: 20px; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; }
-		</style>
-	</head>
-	<body class="font-sans text-stone-800">
-        <div style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; background: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1200&auto=format&fit=crop') no-repeat center center; background-size: cover; opacity: 0.3;"></div>
+        // --- 才能篇 ---
+        {
+            id: 7,
+            text: "目前人生最充实的经历是什么？",
+            hintPrompt: "请基于老高的观点引导我：哪段时间过得特快？什么时候做事情会忘记看手机、忘记吃饭？那种‘顺手’的感觉是在做什么？"
+        },
+        {
+            id: 8,
+            text: "最近一次不耐烦的事情（★ 挖掘天赋最快的一题）",
+            hintPrompt: "请基于老高的观点引导我：注意！看见谁做事笨手笨脚让我火大？心里想‘这玩意这么简单你怎么做不好’？引导我挖掘：那个我觉得简单但他做不好的事，就是我的才能。"
+        },
+        {
+            id: 9,
+            text: "问身边的人自己擅长什么？",
+            hintPrompt: "请基于老高的观点引导我：才能像呼吸一样无意识。引导我去问别人：‘你觉得我干什么最厉害？’ 是‘你真细心’还是‘你点子真多’？"
+        },
+        {
+            id: 10,
+            text: "放弃现在的工作特别想做的事情？",
+            hintPrompt: "请基于老高的观点引导我：如果没有钱的问题，我本能想干什么？假设中了彩票，玩腻了之后，每天早上起来想琢磨点什么事来打发时间？"
+        },
+        {
+            id: 11,
+            text: "目前为止成功的事情？",
+            hintPrompt: "请基于老高的观点引导我：不需要大成功。哪怕是小学得小红花，或者帮朋友解决了一个麻烦。哪件事做完让我觉得自己‘挺行’的？"
+        },
 
-        <div class="main-wrapper px-4">
-            <div class="max-w-3xl w-full bg-white/95 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-stone-200 flex flex-col" style="min-height: 85vh;">
-                <div class="w-full bg-stone-100 h-2"><div id="progress-bar" class="bg-stone-800 h-2 transition-all duration-500" style="width: 0%"></div></div>
+        // --- 热情篇 ---
+        {
+            id: 12,
+            text: "什么事情就算花钱也愿意去学？",
+            hintPrompt: "请基于老高的观点引导我：真的热情是需要花代价的。如果现在给我一笔钱规定只能报班学习，我第一反应是去报什么班？"
+        },
+        {
+            id: 13,
+            text: "你的书架上有什么内容的书？",
+            hintPrompt: "请基于老高的观点引导我：翻翻书架或浏览记录。那些我‘买回来’的信息暴露了真正的好奇心。我看闲着没事就想点开哪类视频？是历史？机械？还是心理学？"
+        },
+        {
+            id: 14,
+            text: "什么内容给你很大的帮助？",
+            hintPrompt: "请基于老高的观点引导我：有没有一本书或电影在低谷时救过我？如果房子着火只能带走一个内容，我会选哪个？为什么？"
+        },
+        {
+            id: 15,
+            text: "你有想要感谢的人和事么？",
+            hintPrompt: "请基于老高的观点引导我：我想对谁说谢谢？那个让我感激的源头，通常连着我的热情。他帮了我什么？那个点往往是我也想带给别人的。"
+        },
+        {
+            id: 16,
+            text: "你对这个世界有什么不满么？",
+            hintPrompt: "请基于老高的观点引导我：这比社会不足更大。我对世界有什么愤怒？如果是神，我最想消灭什么？（贫穷、战争、还是丑陋的设计？）"
+        }
+    ];
 
-                <div class="p-6 border-b border-stone-100 bg-white/80 sticky top-0 z-30 shadow-sm flex justify-between items-center">
-                    <a href="/" class="text-xl font-bold text-stone-800 tracking-tight">← 人生说明书</a>
-                    <div class="flex gap-1"><div class="w-3 h-3 rounded-full bg-red-400"></div><div class="w-3 h-3 rounded-full bg-blue-400"></div><div class="w-3 h-3 rounded-full bg-yellow-400"></div></div>
-                </div>
+    let currentStep = 0;
+    const answers = new Array(questions.length).fill('');
+    
+    // DOM 元素引用
+    const questionText = document.getElementById('question-text');
+    const stepIndicator = document.getElementById('step-indicator');
+    const inputArea = document.getElementById('answer-input') as HTMLTextAreaElement;
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const hintBtn = document.getElementById('hint-btn');
+    const hintBox = document.getElementById('hint-box');
+    const hintContent = document.getElementById('hint-content');
+    const formSection = document.getElementById('form-section');
+    const reportSection = document.getElementById('report-section');
+    const reportContent = document.getElementById('report-content');
 
-                <div id="app" class="flex-1 p-6 overflow-y-auto pb-20 scroll-smooth relative">
-                    <!-- Step 0 -->
-                    <div id="step-0" class="fade-in h-full flex flex-col justify-center items-center text-center space-y-8 py-12">
-                        <div class="text-7xl">🧬</div>
-                        <div><h2 class="text-3xl font-bold text-stone-800 mb-3">寻找出厂设置</h2><p class="text-stone-500 text-sm">16 个潜意识探针 · AI 深度解析</p></div>
-                        <div class="w-full max-w-xs space-y-4">
-                            <input type="text" id="user-name" placeholder="请输入你的名字" class="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl text-center focus:border-stone-800 outline-none transition font-bold text-lg">
-                            <button onclick="start()" class="w-full bg-stone-800 text-white py-4 rounded-xl hover:bg-stone-900 transition font-bold shadow-lg text-lg">开始解析</button>
-                        </div>
-                    </div>
+    // 初始化第一题
+    updateUI();
 
-                    <!-- Form -->
-                    <div id="form-container" class="hidden fade-in">
-                        <div class="flex items-center gap-3 mb-8">
-                            <span id="chapter-badge" class="bg-stone-800 text-white px-3 py-1 rounded text-xs font-bold">PART 1</span>
-                            <div><h2 id="chapter-title" class="text-2xl font-bold text-stone-800"></h2><p id="section-desc" class="text-sm text-stone-500 mt-1"></p></div>
-                        </div>
-                        <div id="questions-list" class="space-y-12"></div>
-                    </div>
+    // 监听输入，控制按钮状态
+    inputArea.addEventListener('input', (e) => {
+        const val = (e.target as HTMLTextAreaElement).value;
+        answers[currentStep] = val;
+        // 有内容才能点下一步
+        if(nextBtn) (nextBtn as HTMLButtonElement).disabled = val.trim() === '';
+        if(submitBtn) (submitBtn as HTMLButtonElement).disabled = val.trim() === '';
+    });
 
-                    <!-- Loading -->
-                    <div id="loading-screen" class="hidden h-full flex flex-col justify-center items-center text-center fade-in py-20">
-                        <div class="animate-spin text-5xl mb-6">⏳</div>
-                        <h3 class="text-2xl font-bold text-stone-800">正在连接潜意识...</h3>
-                        <p class="text-stone-500 text-sm mt-4">AI 正在分析你的 16 个回答...</p>
-                    </div>
+    // 下一步
+    if(nextBtn) nextBtn.addEventListener('click', () => {
+        if (currentStep < questions.length - 1) {
+            currentStep++;
+            updateUI();
+        }
+    });
 
-                    <!-- Result -->
-                    <div id="result-screen" class="hidden fade-in space-y-10 pb-10">
-                        <div class="text-center border-b border-stone-100 pb-6">
-                            <h2 class="text-3xl font-bold text-stone-800">分析报告</h2>
-                            <p class="text-stone-500 text-sm mt-2">受测者: <span id="res-name" class="font-bold text-black text-lg"></span></p>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="bg-red-50 p-5 rounded-2xl border border-red-100 text-center"><div class="text-xs font-black text-red-400 mb-2">VALUES</div><div id="kw-values" class="text-lg font-bold text-red-900"></div></div>
-                            <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100 text-center"><div class="text-xs font-black text-blue-400 mb-2">TALENTS</div><div id="kw-talents" class="text-lg font-bold text-blue-900"></div></div>
-                            <div class="bg-yellow-50 p-5 rounded-2xl border border-yellow-100 text-center"><div class="text-xs font-black text-yellow-600 mb-2">PASSION</div><div id="kw-passion" class="text-lg font-bold text-yellow-900"></div></div>
-                        </div>
-                        <div class="bg-stone-900 text-white p-8 rounded-3xl shadow-xl text-center space-y-6">
-                            <p class="text-lg text-stone-300">在 <span id="f-passion" class="text-yellow-400 font-bold"></span> 领域</p>
-                            <p class="text-lg text-stone-300">利用 <span id="f-talent" class="text-blue-400 font-bold"></span></p>
-                            <p class="text-2xl font-bold text-white mt-4">去实现 <span id="f-value" class="text-red-500 bg-white/10 px-3 py-1 rounded-lg"></span></p>
-                        </div>
-                        <div class="bg-white border border-stone-200 p-6 rounded-2xl">
-                            <h3 class="font-bold text-stone-800 mb-4">💼 职业建议</h3>
-                            <p id="res-advice" class="text-sm text-stone-600 leading-loose whitespace-pre-line"></p>
-                        </div>
-                        <button onclick="location.reload()" class="w-full py-4 bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-500">重新测试</button>
-                    </div>
-                </div>
+    // 上一步
+    if(prevBtn) prevBtn.addEventListener('click', () => {
+        if (currentStep > 0) {
+            currentStep--;
+            updateUI();
+        }
+    });
 
-                <div id="footer-nav" class="hidden p-4 border-t border-stone-100 bg-white/90 sticky bottom-0 z-20 flex gap-3">
-                    <button onclick="prevSection()" id="prev-btn" class="flex-1 bg-white border border-stone-200 text-stone-600 py-3 rounded-xl font-bold">← 上一步</button>
-                    <button onclick="nextSection()" id="next-btn" class="flex-[2] bg-stone-800 text-white py-3 rounded-xl font-bold shadow-lg">下一步 →</button>
-                </div>
+    // 提交生成报告
+    if(submitBtn) submitBtn.addEventListener('click', generateReport);
 
-                <!-- Modal -->
-                <div id="hint-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center px-4">
-                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative">
-                        <button onclick="closeHint()" class="absolute top-4 right-4 text-2xl">&times;</button>
-                        <h3 class="text-lg font-bold mb-4">💡 思路锦囊</h3>
-                        <div class="space-y-4 text-sm leading-relaxed">
-                            <div class="bg-yellow-50 p-3 rounded text-yellow-900" id="modal-intent"></div>
-                            <div class="whitespace-pre-line" id="modal-guide"></div>
-                            <div id="modal-ai-section" class="hidden border-t pt-3 mt-3"><strong class="text-blue-600">🤖 AI 建议:</strong><p id="modal-ai-content" class="mt-1 text-stone-700"></p></div>
-                        </div>
-                        <button onclick="closeHint()" class="mt-6 bg-stone-800 text-white w-full py-3 rounded-xl font-bold">我明白了</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    // 点击“没思路”按钮
+    if(hintBtn) hintBtn.addEventListener('click', askAI);
 
-        <script is:inline>
-            const API_URL = "/api/ai"; 
-            let currentSectionIdx = 0, userName = "", userAnswers = {};
+    // ==========================================
+    // 2. 核心函数：求助 AI (请求 /api/ai)
+    // ==========================================
+    async function askAI() {
+        const currentQ = questions[currentStep];
+
+        // UI 状态切换
+        hintBtn.disabled = true;
+        hintBtn.innerText = "老高思考中...";
+        hintBox.classList.remove('hidden');
+        hintContent.innerHTML = '<span class="loading-dots">正在连接思维库...</span>';
+
+        try {
+            // ★★★ 注意这里：已经改成了 /api/ai ★★★
+            const response = await fetch('/api/ai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    type: 'hint', 
+                    prompt: currentQ.hintPrompt 
+                }) 
+            });
+
+            const data = await response.json();
             
-            const chapters = [
-                { id: "values", name: "价值观", desc: "你最看重什么？", questions: [
-                    { q: "1. 你尊敬的人是谁？", intent: "直觉是谁就是谁。", guide: "别管他伟不伟大，脑子里蹦出的第一个人。" },
-                    { q: "2. 为什么尊敬他？", intent: "形容词才是重点。", guide: "他哪一点打动了你？" },
-                    { q: "3. 青春期影响最大的事？", intent: "世界观冲击。", guide: "觉得特别不公平，或特别想活成那样的时刻。" },
-                    { q: "4. 觉得社会缺什么？", intent: "你想改变什么。", guide: "如果你有魔法，你想改社会哪一点？" },
-                    { q: "5. 朋友觉得你看重什么？", intent: "客观视角。", guide: "发微信问死党：‘你觉得我最看重什么？’" },
-                    { q: "6. 给身边人的建议？", intent: "你常挂嘴边的话。", guide: "你总忍不住想纠正别人什么？" }
-                ]},
-                { id: "talents", name: "才能", desc: "你觉得简单别人觉得难的事", questions: [
-                    { q: "7. 最充实的经历？", intent: "忘我的时刻。", guide: "什么时候你会忘记吃饭看手机？" },
-                    { q: "8. 最近感到不耐烦的事？", intent: "你觉得简单他做不好。", guide: "谁做事笨手笨脚让你火大？" },
-                    { q: "9. 别人夸你什么？", intent: "无意识的优点。", guide: "朋友常夸你细心还是点子多？" },
-                    { q: "10. 不工作想做什么？", intent: "本能驱动。", guide: "中彩票后玩腻了，你想琢磨点什么？" },
-                    { q: "11. 做过最成功的事？", intent: "胜任感。", guide: "哪件事做完觉得自己挺行？" }
-                ]},
-                { id: "passion", name: "热情", desc: "愿意付出代价的事", questions: [
-                    { q: "12. 愿意花钱学什么？", intent: "真爱需代价。", guide: "第一反应报什么班？" },
-                    { q: "13. 书架/浏览记录最多的内容？", intent: "真实好奇心。", guide: "打开抖音/B站，推荐给你最多的分类？" },
-                    { q: "14. 救过你的内容/知识？", intent: "低谷期的光。", guide: "只能留一本书，你留哪本？" },
-                    { q: "15. 想感谢的人或事？", intent: "感激源头。", guide: "谁的帮助让你现在心里还暖暖的？" },
-                    { q: "16. 对世界有什么不满？", intent: "深层愿望。", guide: "如果这世界少一样东西会更好，是什么？" }
-                ]}
-            ];
-            chapters.forEach(c => { userAnswers[c.id] = new Array(c.questions.length).fill(""); });
+            // 🧹 格式清洗
+            let rawText = data.reply || "暂时没有思路，请相信直觉。";
+            const cleanText = rawText
+                .replace(/^AI\s*补充[:：]?\s*/gi, '')
+                .replace(/<li>/gi, '\n• ')
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/?(strong|b|i|em|ul|ol|p|div|span)[^>]*>/gi, '')
+                .trim();
 
-            function start() {
-                const name = document.getElementById('user-name').value.trim();
-                if(!name) return alert("请输入名字");
-                userName = name;
-                document.getElementById('step-0').classList.add('hidden');
-                document.getElementById('form-container').classList.remove('hidden');
-                document.getElementById('footer-nav').classList.remove('hidden'); document.getElementById('footer-nav').classList.add('flex');
-                renderSection();
-            }
+            hintContent.innerText = cleanText;
 
-            function renderSection() {
-                const section = chapters[currentSectionIdx];
-                const container = document.getElementById('questions-list');
-                container.innerHTML = ""; 
-                document.getElementById('chapter-badge').innerText = `PART ${currentSectionIdx+1}`;
-                document.getElementById('chapter-title').innerText = section.name;
-                document.getElementById('section-desc').innerText = section.desc;
-                document.getElementById('progress-bar').style.width = `${((currentSectionIdx)/3)*100}%`;
-                document.getElementById('prev-btn').style.display = currentSectionIdx===0?'none':'block';
-                document.getElementById('next-btn').innerText = currentSectionIdx===2?"✨ 生成报告":"下一步 →";
+        } catch (error) {
+            hintContent.innerText = "连接超时，请检查网络。";
+        } finally {
+            hintBtn.disabled = false;
+            hintBtn.innerText = "💡 没思路？问问AI怎么写";
+        }
+    }
 
-                section.questions.forEach((item, idx) => {
-                    const val = userAnswers[section.id][idx] || "";
-                    container.innerHTML += `
-                        <div class="bg-stone-50 p-6 rounded-xl border border-stone-100">
-                            <div class="mb-3 font-bold text-stone-800">${item.q}</div>
-                            <textarea id="input-${idx}" rows="3" class="w-full p-4 border rounded-lg text-sm" placeholder="你的回答..." onblur="saveInput(${idx})">${val}</textarea>
-                            <div class="flex justify-end gap-2 mt-3">
-                                <button onclick="askAI(${idx}, 'hint')" class="text-xs bg-white border px-3 py-1 rounded-full text-stone-500">🤖 AI思路</button>
-                                <button onclick="askAI(${idx}, 'refine')" class="text-xs bg-white border px-3 py-1 rounded-full text-stone-500">✨ 润色</button>
-                            </div>
-                        </div>`;
-                });
-                document.getElementById('app').scrollTo(0,0);
-            }
+    // ==========================================
+    // 3. 核心函数：生成最终报告 (请求 /api/ai)
+    // ==========================================
+    async function generateReport() {
+        formSection.classList.add('hidden');
+        reportSection.classList.remove('hidden');
+        reportContent.innerHTML = '<div class="loading">正在根据“三圆圈模型”分析你的人生数据...<br>请稍等，这可能需要几十秒。</div>';
 
-            function saveInput(idx) { userAnswers[chapters[currentSectionIdx].id][idx] = document.getElementById(`input-${idx}`).value; }
-            function saveAll() { 
-                const list = document.querySelectorAll('textarea');
-                let hasVal = false;
-                list.forEach((el, i) => { userAnswers[chapters[currentSectionIdx].id][i] = el.value; if(el.value.trim()) hasVal=true; });
-                return hasVal;
-            }
+        // 整理历史数据
+        const history = questions.map((q, index) => ({
+            id: q.id,
+            question: q.text,
+            answer: answers[index]
+        }));
 
-            function prevSection() { saveAll(); if(currentSectionIdx>0){currentSectionIdx--; renderSection();} }
-            async function nextSection() {
-                if(!saveAll()) return alert("请至少回答一个问题");
-                if(currentSectionIdx<2) { currentSectionIdx++; renderSection(); }
-                else { await submit(); }
-            }
+        try {
+            // ★★★ 注意这里：已经改成了 /api/ai ★★★
+            const response = await fetch('/api/ai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    type: 'report', 
+                    history: history 
+                }) 
+            });
 
-            async function askAI(idx, type) {
-                const qData = chapters[currentSectionIdx].questions[idx];
-                const val = document.getElementById(`input-${idx}`).value;
-                if(type==='refine' && !val) return alert("请先写点内容");
-                
-                try {
-                    const res = await fetch(API_URL, {
-                        method: "POST", headers: {"Content-Type":"application/json"},
-                        body: JSON.stringify({ 
-                            action: type, 
-                            data: { question: qData.q, theory_context: qData.intent, text: val },
-                            context: chapters[currentSectionIdx].name 
-                        })
-                    });
-                    const json = await res.json();
-                    if(type==='hint') {
-                        document.getElementById('hint-modal').classList.remove('hidden');
-                        document.getElementById('modal-intent').innerText = qData.intent;
-                        document.getElementById('modal-guide').innerText = qData.guide;
-                        document.getElementById('modal-ai-section').classList.remove('hidden');
-                        document.getElementById('modal-ai-content').innerText = json.data;
-                    } else {
-                        document.getElementById(`input-${idx}`).value = json.data;
-                    }
-                } catch(e) { alert("AI 连接失败，请检查网络"); }
-            }
-            function closeHint() { document.getElementById('hint-modal').classList.add('hidden'); }
+            const data = await response.json();
+            reportContent.innerHTML = data.reply; 
 
-            async function submit() {
-                document.getElementById('form-container').classList.add('hidden');
-                document.getElementById('footer-nav').classList.add('hidden');
-                document.getElementById('loading-screen').classList.remove('hidden');
-                document.getElementById('progress-bar').style.width = "100%";
+        } catch (error) {
+            reportContent.innerHTML = '<div class="error">生成失败，请刷新重试。</div>';
+            formSection.classList.remove('hidden');
+        }
+    }
 
-                try {
-                    const res = await fetch(API_URL, {
-                        method: "POST", headers: {"Content-Type":"application/json"},
-                        body: JSON.stringify({
-                            action: 'analyze', user_name: userName, answers: userAnswers,
-                            system_prompt: `你是一位精通八木仁平理论的人生规划师。请分析用户回答，返回JSON格式：
-                            { "values": "关键词", "talents": "关键词", "passion": "关键词", 
-                              "formula_sentence": { "passion": "领域", "talent": "手段", "value": "目的" },
-                              "advice": "建议" }`
-                        })
-                    });
-                    const json = await res.json();
-                    const r = json.data;
-                    
-                    document.getElementById('loading-screen').classList.add('hidden');
-                    document.getElementById('result-screen').classList.remove('hidden');
-                    
-                    document.getElementById('res-name').innerText = userName;
-                    document.getElementById('kw-values').innerText = r.values||"";
-                    document.getElementById('kw-talents').innerText = r.talents||"";
-                    document.getElementById('kw-passion').innerText = r.passion||"";
-                    if(r.formula_sentence) {
-                        document.getElementById('f-passion').innerText = r.formula_sentence.passion;
-                        document.getElementById('f-talent').innerText = r.formula_sentence.talent;
-                        document.getElementById('f-value').innerText = r.formula_sentence.value;
-                    }
-                    document.getElementById('res-advice').innerText = r.advice||"";
+    // 界面更新逻辑
+    function updateUI() {
+        const q = questions[currentStep];
+        questionText.innerText = `${currentStep + 1}. ${q.text}`;
+        stepIndicator.innerText = `问题 ${currentStep + 1} / ${questions.length}`;
+        
+        // 回显之前的答案
+        inputArea.value = answers[currentStep] || '';
+        inputArea.focus();
 
-                } catch(e) { 
-                    alert("生成失败，请重试");
-                    location.reload();
-                }
-            }
-        </script>
-	</body>
-</html>
+        // 隐藏/显示 提示框
+        hintBox.classList.add('hidden');
+        hintContent.innerHTML = '';
+
+        // 按钮显示逻辑
+        if (currentStep === 0) {
+            prevBtn.classList.add('hidden');
+        } else {
+            prevBtn.classList.remove('hidden');
+        }
+
+        if (currentStep === questions.length - 1) {
+            nextBtn.classList.add('hidden');
+            submitBtn.classList.remove('hidden');
+        } else {
+            nextBtn.classList.remove('hidden');
+            submitBtn.classList.add('hidden');
+        }
+        
+        // 更新下一步按钮状态
+        const currentVal = inputArea.value.trim();
+        if(nextBtn) (nextBtn as HTMLButtonElement).disabled = currentVal === '';
+        if(submitBtn) (submitBtn as HTMLButtonElement).disabled = currentVal === '';
+    }
+</script>
