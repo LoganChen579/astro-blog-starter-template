@@ -9,8 +9,11 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 <html lang="zh-cn">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<!-- 👇 这一行是关键！让你的漂亮样式生效 -->
+		
+		<!-- 👇👇👇 就是这一行！它是网页变漂亮的“化妆师” 👇👇👇 -->
 		<script src="https://cdn.tailwindcss.com"></script>
+		<!-- 👆👆👆 必须要有这一行，样式才会生效 👆👆👆 -->
+
 	</head>
 	<body class="bg-slate-50 font-sans text-slate-800">
 		<Header />
@@ -156,10 +159,10 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 				<p class="text-indigo-100 max-w-2xl mx-auto mb-8 text-lg">
 					不需要面对白纸发愁。我们的 AI 助手将引导你逐一回答价值观、才能和热情的关键问题，并帮你分析出你的核心关键词。
 				</p>
-				<button onclick="alert('AI 功能正在开发中，敬请期待！')" class="bg-white text-indigo-600 px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-indigo-50 hover:scale-105 transition-all flex items-center mx-auto gap-2 cursor-pointer">
+				<a href="/guide" class="inline-flex items-center gap-2 bg-white text-indigo-600 px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-indigo-50 hover:scale-105 transition-all mx-auto">
 					开始 AI 引导式探索
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-				</button>
+				</a>
 			</section>
 
 		</main>
