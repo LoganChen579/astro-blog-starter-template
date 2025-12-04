@@ -1,8 +1,8 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<Layout title="人生使用说明书 - 逻辑推演版">
+<BaseLayout title="人生使用说明书 - 逻辑推演版">
   <main class="container">
     <header class="header">
       <h1>人生使用说明书</h1>
@@ -68,22 +68,21 @@ import Layout from '../layouts/Layout.astro';
       var answers = new Array(questions.length).fill('');
 
       // DOM 引用
-      var stepText     = document.getElementById('step-indicator');
-      var qText        = document.getElementById('question-text');
-      var inputArea    = document.getElementById('answer-input');
-      var prevBtn      = document.getElementById('prev-btn');
-      var nextBtn      = document.getElementById('next-btn');
-      var submitBtn    = document.getElementById('submit-btn');
-      var hintBtn      = document.getElementById('hint-btn');
-      var hintBox      = document.getElementById('hint-box');
-      var hintContent  = document.getElementById('hint-content');
-      var formSection  = document.getElementById('form-section');
-      var reportSection= document.getElementById('report-section');
-      var reportContent= document.getElementById('report-content');
-      var restartBtn   = document.getElementById('restart-btn');
+      var stepText      = document.getElementById('step-indicator');
+      var qText         = document.getElementById('question-text');
+      var inputArea     = document.getElementById('answer-input');
+      var prevBtn       = document.getElementById('prev-btn');
+      var nextBtn       = document.getElementById('next-btn');
+      var submitBtn     = document.getElementById('submit-btn');
+      var hintBtn       = document.getElementById('hint-btn');
+      var hintBox       = document.getElementById('hint-box');
+      var hintContent   = document.getElementById('hint-content');
+      var formSection   = document.getElementById('form-section');
+      var reportSection = document.getElementById('report-section');
+      var reportContent = document.getElementById('report-content');
+      var restartBtn    = document.getElementById('restart-btn');
 
       if (!stepText || !qText || !inputArea) {
-        // 页面结构不完整，直接返回，避免报错
         return;
       }
 
@@ -349,7 +348,6 @@ import Layout from '../layouts/Layout.astro';
       color: #555;
     }
 
-    /* 报告展示用样式（和之前一致） */
     .report-container {
       animation: fadeIn 0.8s ease;
     }
@@ -487,4 +485,4 @@ import Layout from '../layouts/Layout.astro';
       100% { transform: rotate(360deg); }
     }
   </style>
-</Layout>
+</BaseLayout>
