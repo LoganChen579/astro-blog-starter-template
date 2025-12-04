@@ -54,7 +54,7 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
     // ==========================================
-    // 1. 题目配置
+    // 1. 题目配置 (逻辑保持不变)
     // ==========================================
     const questions = [
         { id: 1, text: "你尊敬的人是谁？", placeholder: "老高提示：写下名字。不要管伟不伟大，想他身上的形容词。", hintPrompt: "我不知道写谁，引导我思考我想成为什么样的人。" },
@@ -78,38 +78,43 @@ import Layout from '../layouts/Layout.astro';
     let currentStep = 0;
     const answers = new Array(questions.length).fill('');
     
-    // 获取 DOM 元素 (不使用强制类型转换，避免 TS 报错)
-    const els = {
-        stepText: document.getElementById('step-indicator'),
-        qText: document.getElementById('question-text'),
-        input: document.getElementById('answer-input'),
-        prev: document.getElementById('prev-btn'),
-        next: document.getElementById('next-btn'),
-        submit: document.getElementById('submit-btn'),
-        hintBtn: document.getElementById('hint-btn'),
-        hintBox: document.getElementById('hint-box'),
-        hintContent: document.getElementById('hint-content'),
-        formSection: document.getElementById('form-section'),
-        reportSection: document.getElementById('report-section'),
-        reportContent: document.getElementById('report-content'),
-        restartBtn: document.getElementById('restart-btn')
-    };
+    // ==========================================
+    // 2. 获取 DOM 元素 (单独定义，显式类型转换，不再打包)
+    // ==========================================
+    const stepText = document.getElementById('step-indicator');
+    const qText = document.getElementById('question-text');
+    // 显式告诉 TS：这肯定是 textarea，或者是 null
+    const inputArea = document.getElementById('answer-input') as HTMLTextAreaElement | null;
+    const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement | null;
+    const nextBtn = document.getElementById('next-btn') as HTMLButtonElement | null;
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+    
+    const hintBtn = document.getElementById('hint-btn') as HTMLButtonElement | null;
+    const hintBox = document.getElementById('hint-box');
+    const hintContent = document.getElementById('hint-content');
+    
+    const formSection = document.getElementById('form-section');
+    const reportSection = document.getElementById('report-section');
+    const reportContent = document.getElementById('report-content');
+    const restartBtn = document.getElementById('restart-btn') as HTMLButtonElement | null;
 
-    // 初始化
+    // 初始化界面
     renderUI();
 
-    // 事件监听 (增加非空判断 ?.)
-    if (els.input) {
-        els.input.addEventListener('input', (e) => {
-            // @ts-ignore
-            const val = e.target.value;
-            answers[currentStep] = val;
+    // ==========================================
+    // 3. 事件监听 (每一步都做非空检查)
+    // ==========================================
+    
+    if (inputArea) {
+        inputArea.addEventListener('input', (e) => {
+            const target = e.target as HTMLTextAreaElement;
+            answers[currentStep] = target.value;
             checkBtnState();
         });
     }
 
-    if (els.next) {
-        els.next.addEventListener('click', () => {
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
             if(currentStep < questions.length - 1) {
                 currentStep++;
                 renderUI();
@@ -117,8 +122,8 @@ import Layout from '../layouts/Layout.astro';
         });
     }
 
-    if (els.prev) {
-        els.prev.addEventListener('click', () => {
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
             if(currentStep > 0) {
                 currentStep--;
                 renderUI();
@@ -126,47 +131,48 @@ import Layout from '../layouts/Layout.astro';
         });
     }
 
-    if (els.restartBtn) {
-        els.restartBtn.addEventListener('click', () => {
+    if (restartBtn) {
+        restartBtn.addEventListener('click', () => {
             location.reload();
         });
     }
 
-    if (els.hintBtn) {
-        els.hintBtn.addEventListener('click', async () => {
+    if (hintBtn) {
+        hintBtn.addEventListener('click', async () => {
             const q = questions[currentStep];
-            if(els.hintBtn) {
-                els.hintBtn.disabled = true;
-                els.hintBtn.innerText = "老高正在思考...";
+            if (hintBtn) {
+                hintBtn.disabled = true;
+                hintBtn.innerText = "老高正在思考...";
             }
-            if(els.hintBox) els.hintBox.classList.remove('hidden');
-            if(els.hintContent) els.hintContent.innerHTML = "正在连接思维库...";
+            if (hintBox) hintBox.classList.remove('hidden');
+            if (hintContent) hintContent.innerHTML = "正在连接思维库...";
             
             try {
                 const res = await fetch('/api/ai', {
                     method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ type: 'hint', prompt: q.hintPrompt })
                 });
                 const data = await res.json();
-                if(els.hintContent) els.hintContent.innerText = data.reply;
+                if (hintContent) hintContent.innerText = data.reply;
             } catch(e) {
-                if(els.hintContent) els.hintContent.innerText = "连接超时";
+                if (hintContent) hintContent.innerText = "连接超时";
             }
             
-            if(els.hintBtn) {
-                els.hintBtn.disabled = false;
-                els.hintBtn.innerText = "💡 没思路？呼叫老高";
+            if (hintBtn) {
+                hintBtn.disabled = false;
+                hintBtn.innerText = "💡 没思路？呼叫老高";
             }
         });
     }
 
-    if (els.submit) {
-        els.submit.addEventListener('click', async () => {
-            if(els.formSection) els.formSection.classList.add('hidden');
-            if(els.reportSection) els.reportSection.classList.remove('hidden');
+    if (submitBtn) {
+        submitBtn.addEventListener('click', async () => {
+            if (formSection) formSection.classList.add('hidden');
+            if (reportSection) reportSection.classList.remove('hidden');
             
-            if(els.reportContent) {
-                els.reportContent.innerHTML = `
+            if (reportContent) {
+                reportContent.innerHTML = `
                     <div class="loading-state">
                         <div class="spinner"></div>
                         <h3>正在进行逻辑推演...</h3>
@@ -184,49 +190,51 @@ import Layout from '../layouts/Layout.astro';
             try {
                 const res = await fetch('/api/ai', {
                     method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ type: 'report', history })
                 });
                 const data = await res.json();
-                if(els.reportContent) els.reportContent.innerHTML = data.reply;
+                // ★ 核心逻辑：直接注入 API 返回的 HTML
+                if (reportContent) reportContent.innerHTML = data.reply;
             } catch(e) {
-                if(els.reportContent) els.reportContent.innerHTML = "<h3>生成失败，请重试。</h3>";
-                if(els.formSection) els.formSection.classList.remove('hidden');
+                if (reportContent) reportContent.innerHTML = "<h3>生成失败，请重试。</h3>";
+                if (formSection) formSection.classList.remove('hidden');
             }
         });
     }
 
+    // ==========================================
+    // 4. 界面更新函数
+    // ==========================================
     function renderUI() {
         const q = questions[currentStep];
-        if(els.stepText) els.stepText.innerText = `Question ${currentStep + 1} / ${questions.length}`;
-        if(els.qText) els.qText.innerText = q.text;
+        if (stepText) stepText.innerText = `Question ${currentStep + 1} / ${questions.length}`;
+        if (qText) qText.innerText = q.text;
         
-        if(els.input) {
-            // @ts-ignore
-            els.input.value = answers[currentStep] || '';
-            // @ts-ignore
-            els.input.placeholder = q.placeholder;
-            els.input.focus();
+        if (inputArea) {
+            inputArea.value = answers[currentStep] || '';
+            inputArea.placeholder = q.placeholder;
+            inputArea.focus();
         }
 
-        if(els.hintBox) els.hintBox.classList.add('hidden');
+        if (hintBox) hintBox.classList.add('hidden');
         
-        if(els.prev) els.prev.classList.toggle('hidden', currentStep === 0);
+        if (prevBtn) prevBtn.classList.toggle('hidden', currentStep === 0);
         
         const isLast = currentStep === questions.length - 1;
-        if(els.next) els.next.classList.toggle('hidden', isLast);
-        if(els.submit) els.submit.classList.toggle('hidden', !isLast);
+        if (nextBtn) nextBtn.classList.toggle('hidden', isLast);
+        if (submitBtn) submitBtn.classList.toggle('hidden', !isLast);
         
         checkBtnState();
     }
 
     function checkBtnState() {
-        // @ts-ignore
-        const val = els.input ? els.input.value.trim() : '';
-        const empty = !val;
-        // @ts-ignore
-        if(els.next) els.next.disabled = empty;
-        // @ts-ignore
-        if(els.submit) els.submit.disabled = empty;
+        if (inputArea) {
+            const val = inputArea.value.trim();
+            const empty = !val;
+            if (nextBtn) nextBtn.disabled = empty;
+            if (submitBtn) submitBtn.disabled = empty;
+        }
     }
 </script>
 
