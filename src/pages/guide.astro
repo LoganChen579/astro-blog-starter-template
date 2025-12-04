@@ -1,257 +1,369 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="人生使用说明书 - 逻辑推演版">
+  <main class="container">
+    
+    <!-- 顶部标题 -->
+    <header class="header">
+      <h1>人生使用说明书</h1>
+      <p class="subtitle">LOGIC KERNEL: DATA FILTERING & SYNTHESIS</p>
+    </header>
+
+    <!-- 问答表单区域 -->
+    <section id="form-section" class="form-card">
+      <div class="progress-bar">
+        <span id="step-indicator">Loading...</span>
+      </div>
+      
+      <div class="question-box">
+        <h2 id="question-text">...</h2>
+        
+        <!-- 专门为老高逻辑定制的提示区 -->
+        <div class="hint-wrapper">
+            <button id="hint-btn" class="hint-btn">💡 没思路？呼叫老高</button>
+            <div id="hint-box" class="hint-box hidden">
+                <div class="hint-content" id="hint-content"></div>
+            </div>
+        </div>
+
+        <textarea id="answer-input" rows="6" placeholder="..."></textarea>
+        
+        <div class="nav-buttons">
+          <button id="prev-btn" class="btn secondary hidden">上一步</button>
+          <button id="next-btn" class="btn primary" disabled>下一步</button>
+          <button id="submit-btn" class="btn accent hidden" disabled>生成说明书</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 报告生成区域 (用来承接新的 HTML 结构) -->
+    <section id="report-section" class="report-wrapper hidden">
+      <div id="report-content">
+        <!-- API 返回的 HTML 将会被注入到这里 -->
+      </div>
+      
+      <div class="action-area">
+        <button id="restart-btn" class="btn secondary">重新测试</button>
+      </div>
+    </section>
+
+  </main>
+</Layout>
+
 <script>
     // ==========================================
-    // 1. 定义题目与“老高”的独家引导逻辑
+    // 1. 题目数据配置
     // ==========================================
     const questions = [
-        // --- 价值观篇 ---
-        {
-            id: 1,
-            text: "你尊敬的人是谁？(★ 起点问题)",
-            hintPrompt: "请基于老高的观点引导我：不要想太久，直觉是谁就是谁。不管是名人、父母还是漫画人物(如路飞)。重要的是此时此刻脑子里蹦出来的第一个名字。不要筛选，不要管他够不够伟大。"
-        },
-        {
-            id: 2,
-            text: "为什么尊敬他？/ 喜欢他什么地方？",
-            hintPrompt: "请基于老高的观点引导我：名字不重要，重要的是‘为什么’。引导我找出具体的形容词关键词。是因为他‘自由’？还是‘从未放弃’？这些形容词才是我的价值观。"
-        },
-        {
-            id: 3,
-            text: "青春期对你影响很大的事情是什么？",
-            hintPrompt: "请基于老高的观点引导我：回想初高中时期，有没有对三观产生冲击的事？那时候感性最丰富。有没有觉得特别不公平的事？或者让你瞬间觉得‘我就要这样活’的时刻？"
-        },
-        {
-            id: 4,
-            text: "你觉得现在社会有什么不足的地方？",
-            hintPrompt: "请基于老高的观点引导我：你觉得社会缺什么？或者看不惯哪里？引导我思考：如果有魔法，我想改变社会的一个什么现状？我想补全的那个东西，就是我最看重的价值。"
-        },
-        {
-            id: 5,
-            text: "在朋友眼里你是一个看中什么东西的人？",
-            hintPrompt: "请基于老高的观点引导我：强调这题必须问别人。我自己想的不算。引导我去发微信问死党：‘你觉得我最看重什么？’ 他们的回答往往才是真相。"
-        },
-        {
-            id: 6,
-            text: "给身边人的建议？/ 不希望朋友给你什么样的建议？",
-            hintPrompt: "请基于老高的观点引导我：我经常挂在嘴边劝别人的话是什么？或者别人劝我什么时，我心里会想‘烦死了别管我’？（例如：劝我要合群还是劝我要上进？）"
-        },
-
-        // --- 才能篇 ---
-        {
-            id: 7,
-            text: "目前人生最充实的经历是什么？",
-            hintPrompt: "请基于老高的观点引导我：哪段时间过得特快？什么时候做事情会忘记看手机、忘记吃饭？那种‘顺手’的感觉是在做什么？"
-        },
-        {
-            id: 8,
-            text: "最近一次不耐烦的事情（★ 挖掘天赋最快的一题）",
-            hintPrompt: "请基于老高的观点引导我：注意！看见谁做事笨手笨脚让我火大？心里想‘这玩意这么简单你怎么做不好’？引导我挖掘：那个我觉得简单但他做不好的事，就是我的才能。"
-        },
-        {
-            id: 9,
-            text: "问身边的人自己擅长什么？",
-            hintPrompt: "请基于老高的观点引导我：才能像呼吸一样无意识。引导我去问别人：‘你觉得我干什么最厉害？’ 是‘你真细心’还是‘你点子真多’？"
-        },
-        {
-            id: 10,
-            text: "放弃现在的工作特别想做的事情？",
-            hintPrompt: "请基于老高的观点引导我：如果没有钱的问题，我本能想干什么？假设中了彩票，玩腻了之后，每天早上起来想琢磨点什么事来打发时间？"
-        },
-        {
-            id: 11,
-            text: "目前为止成功的事情？",
-            hintPrompt: "请基于老高的观点引导我：不需要大成功。哪怕是小学得小红花，或者帮朋友解决了一个麻烦。哪件事做完让我觉得自己‘挺行’的？"
-        },
-
-        // --- 热情篇 ---
-        {
-            id: 12,
-            text: "什么事情就算花钱也愿意去学？",
-            hintPrompt: "请基于老高的观点引导我：真的热情是需要花代价的。如果现在给我一笔钱规定只能报班学习，我第一反应是去报什么班？"
-        },
-        {
-            id: 13,
-            text: "你的书架上有什么内容的书？",
-            hintPrompt: "请基于老高的观点引导我：翻翻书架或浏览记录。那些我‘买回来’的信息暴露了真正的好奇心。我看闲着没事就想点开哪类视频？是历史？机械？还是心理学？"
-        },
-        {
-            id: 14,
-            text: "什么内容给你很大的帮助？",
-            hintPrompt: "请基于老高的观点引导我：有没有一本书或电影在低谷时救过我？如果房子着火只能带走一个内容，我会选哪个？为什么？"
-        },
-        {
-            id: 15,
-            text: "你有想要感谢的人和事么？",
-            hintPrompt: "请基于老高的观点引导我：我想对谁说谢谢？那个让我感激的源头，通常连着我的热情。他帮了我什么？那个点往往是我也想带给别人的。"
-        },
-        {
-            id: 16,
-            text: "你对这个世界有什么不满么？",
-            hintPrompt: "请基于老高的观点引导我：这比社会不足更大。我对世界有什么愤怒？如果是神，我最想消灭什么？（贫穷、战争、还是丑陋的设计？）"
-        }
+        // --- 价值观 ---
+        { id: 1, text: "你尊敬的人是谁？", placeholder: "老高提示：写下名字。不要管伟不伟大，想他身上的形容词。", hintPrompt: "我不知道写谁，引导我思考我想成为什么样的人。" },
+        { id: 2, text: "为什么尊敬他？/ 喜欢他什么地方？", placeholder: "核心题：这个形容词（如自由、自律、霸气）就是你的价值观。", hintPrompt: "引导我从‘人’抽象出‘品质’。" },
+        { id: 3, text: "青春期对你影响很大的事情？", placeholder: "那时候你对什么感到愤怒或无力？反面就是你的追求。", hintPrompt: "引导我回忆青春期的情绪。" },
+        { id: 4, text: "你觉得现在社会有什么不足？", placeholder: "你想改变世界哪里？那就是你的责任感所在。", hintPrompt: "引导我思考社会痛点。" },
+        { id: 5, text: "朋友觉得你看重什么？", placeholder: "直接问死党。旁观者清。", hintPrompt: "引导我从通过别人的视角看自己。" },
+        { id: 6, text: "给身边人的建议/不希望收到的建议？", placeholder: "你劝别人的话，就是你的原则。", hintPrompt: "引导我思考我的口头禅。" },
+        // --- 才能 ---
+        { id: 7, text: "目前人生最充实的经历？", placeholder: "哪件事做起来‘像呼吸一样自然’？", hintPrompt: "引导我寻找心流体验。" },
+        { id: 8, text: "最近一次不耐烦的事情？", placeholder: "★关键题：你觉得简单别人却做不好，这就是天赋。", hintPrompt: "引导我利用‘愤怒’挖掘天赋。" },
+        { id: 9, text: "问身边的人自己擅长什么？", placeholder: "不需要是大技能，可能只是‘善于倾听’或‘直觉准’。", hintPrompt: "引导我寻找无意识的习惯。" },
+        { id: 10, text: "抛开钱，你想做什么工作？", placeholder: "纯粹为了打发时间，你想干嘛？", hintPrompt: "引导我去除金钱滤镜。" },
+        { id: 11, text: "目前为止做成过的事情？", placeholder: "如果这题难答，写写你的缺点（如反应慢=专注）。", hintPrompt: "引导我把缺点转化为特点。" },
+        // --- 热情 ---
+        { id: 12, text: "愿意花钱去学的东西？", placeholder: "用钱包投票的最真实。", hintPrompt: "引导我看消费记录。" },
+        { id: 13, text: "书架/收藏夹里最多的内容？", placeholder: "你的注意力流向了哪里？", hintPrompt: "引导我检查信息摄入。" },
+        { id: 14, text: "曾经‘拯救’过你的内容？", placeholder: "低谷期是谁拉了你一把？", hintPrompt: "引导我寻找精神支柱。" },
+        { id: 15, text: "想要感谢的人或事？", placeholder: "感恩的源头藏着热情。", hintPrompt: "引导我思考感恩。" },
+        { id: 16, text: "你对这个世界有什么不满？", placeholder: "你想解决什么问题？（如：想让交通更顺畅）。", hintPrompt: "引导我思考宏大的愿望。" }
     ];
 
     let currentStep = 0;
     const answers = new Array(questions.length).fill('');
     
-    // DOM 元素引用
-    const questionText = document.getElementById('question-text');
-    const stepIndicator = document.getElementById('step-indicator');
-    const inputArea = document.getElementById('answer-input') as HTMLTextAreaElement;
-    const nextBtn = document.getElementById('next-btn');
-    const prevBtn = document.getElementById('prev-btn');
-    const submitBtn = document.getElementById('submit-btn');
-    const hintBtn = document.getElementById('hint-btn');
-    const hintBox = document.getElementById('hint-box');
-    const hintContent = document.getElementById('hint-content');
-    const formSection = document.getElementById('form-section');
-    const reportSection = document.getElementById('report-section');
-    const reportContent = document.getElementById('report-content');
+    // DOM Elements
+    const els = {
+        stepText: document.getElementById('step-indicator'),
+        qText: document.getElementById('question-text'),
+        input: document.getElementById('answer-input') as HTMLTextAreaElement,
+        prev: document.getElementById('prev-btn') as HTMLButtonElement,
+        next: document.getElementById('next-btn') as HTMLButtonElement,
+        submit: document.getElementById('submit-btn') as HTMLButtonElement,
+        hintBtn: document.getElementById('hint-btn') as HTMLButtonElement,
+        hintBox: document.getElementById('hint-box'),
+        hintContent: document.getElementById('hint-content'),
+        formSection: document.getElementById('form-section'),
+        reportSection: document.getElementById('report-section'),
+        reportContent: document.getElementById('report-content'),
+        restartBtn: document.getElementById('restart-btn')
+    };
 
-    // 初始化第一题
-    updateUI();
+    // Init
+    renderUI();
 
-    // 监听输入，控制按钮状态
-    inputArea.addEventListener('input', (e) => {
+    // Events
+    els.input.addEventListener('input', (e) => {
         const val = (e.target as HTMLTextAreaElement).value;
         answers[currentStep] = val;
-        // 有内容才能点下一步
-        if(nextBtn) (nextBtn as HTMLButtonElement).disabled = val.trim() === '';
-        if(submitBtn) (submitBtn as HTMLButtonElement).disabled = val.trim() === '';
+        checkBtnState();
     });
 
-    // 下一步
-    if(nextBtn) nextBtn.addEventListener('click', () => {
-        if (currentStep < questions.length - 1) {
+    els.next.addEventListener('click', () => {
+        if(currentStep < questions.length - 1) {
             currentStep++;
-            updateUI();
+            renderUI();
         }
     });
 
-    // 上一步
-    if(prevBtn) prevBtn.addEventListener('click', () => {
-        if (currentStep > 0) {
+    els.prev.addEventListener('click', () => {
+        if(currentStep > 0) {
             currentStep--;
-            updateUI();
+            renderUI();
         }
     });
 
-    // 提交生成报告
-    if(submitBtn) submitBtn.addEventListener('click', generateReport);
+    els.restartBtn.addEventListener('click', () => {
+        location.reload();
+    });
 
-    // 点击“没思路”按钮
-    if(hintBtn) hintBtn.addEventListener('click', askAI);
-
-    // ==========================================
-    // 2. 核心函数：求助 AI (请求 /api/ai)
-    // ==========================================
-    async function askAI() {
-        const currentQ = questions[currentStep];
-
-        // UI 状态切换
-        hintBtn.disabled = true;
-        hintBtn.innerText = "老高思考中...";
-        hintBox.classList.remove('hidden');
-        hintContent.innerHTML = '<span class="loading-dots">正在连接思维库...</span>';
-
+    els.hintBtn.addEventListener('click', async () => {
+        const q = questions[currentStep];
+        els.hintBtn.disabled = true;
+        els.hintBtn.innerText = "老高正在思考...";
+        els.hintBox.classList.remove('hidden');
+        els.hintContent.innerHTML = "正在连接思维库...";
+        
         try {
-            // ★★★ 注意这里：已经改成了 /api/ai ★★★
-            const response = await fetch('/api/ai', {
+            const res = await fetch('/api/ai', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    type: 'hint', 
-                    prompt: currentQ.hintPrompt 
-                }) 
+                body: JSON.stringify({ type: 'hint', prompt: q.hintPrompt })
             });
-
-            const data = await response.json();
-            
-            // 🧹 格式清洗
-            let rawText = data.reply || "暂时没有思路，请相信直觉。";
-            const cleanText = rawText
-                .replace(/^AI\s*补充[:：]?\s*/gi, '')
-                .replace(/<li>/gi, '\n• ')
-                .replace(/<br\s*\/?>/gi, '\n')
-                .replace(/<\/?(strong|b|i|em|ul|ol|p|div|span)[^>]*>/gi, '')
-                .trim();
-
-            hintContent.innerText = cleanText;
-
-        } catch (error) {
-            hintContent.innerText = "连接超时，请检查网络。";
-        } finally {
-            hintBtn.disabled = false;
-            hintBtn.innerText = "💡 没思路？问问AI怎么写";
+            const data = await res.json();
+            els.hintContent.innerText = data.reply;
+        } catch(e) {
+            els.hintContent.innerText = "连接超时";
         }
-    }
+        els.hintBtn.disabled = false;
+        els.hintBtn.innerText = "💡 没思路？呼叫老高";
+    });
 
-    // ==========================================
-    // 3. 核心函数：生成最终报告 (请求 /api/ai)
-    // ==========================================
-    async function generateReport() {
-        formSection.classList.add('hidden');
-        reportSection.classList.remove('hidden');
-        reportContent.innerHTML = '<div class="loading">正在根据“三圆圈模型”分析你的人生数据...<br>请稍等，这可能需要几十秒。</div>';
+    els.submit.addEventListener('click', async () => {
+        els.formSection.classList.add('hidden');
+        els.reportSection.classList.remove('hidden');
+        els.reportContent.innerHTML = `
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <h3>正在进行逻辑推演...</h3>
+                <p>1. 提取价值观/才能/热情关键词...</p>
+                <p>2. 缺点转化 & 天赋反转计算...</p>
+                <p>3. 合成职业选项 & 价值观过滤...</p>
+            </div>
+        `;
 
-        // 整理历史数据
-        const history = questions.map((q, index) => ({
-            id: q.id,
-            question: q.text,
-            answer: answers[index]
+        const history = questions.map((q, i) => ({
+            id: q.id, question: q.text, answer: answers[i]
         }));
 
         try {
-            // ★★★ 注意这里：已经改成了 /api/ai ★★★
-            const response = await fetch('/api/ai', {
+            const res = await fetch('/api/ai', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    type: 'report', 
-                    history: history 
-                }) 
+                body: JSON.stringify({ type: 'report', history })
             });
-
-            const data = await response.json();
-            reportContent.innerHTML = data.reply; 
-
-        } catch (error) {
-            reportContent.innerHTML = '<div class="error">生成失败，请刷新重试。</div>';
-            formSection.classList.remove('hidden');
+            const data = await res.json();
+            // ★ 关键点：直接注入 API 返回的 HTML，不再自己拼装
+            els.reportContent.innerHTML = data.reply;
+        } catch(e) {
+            els.reportContent.innerHTML = "<h3>生成失败，请重试。</h3>";
+            els.formSection.classList.remove('hidden');
         }
+    });
+
+    function renderUI() {
+        const q = questions[currentStep];
+        els.stepText.innerText = `Question ${currentStep + 1} / ${questions.length}`;
+        els.qText.innerText = q.text;
+        els.input.value = answers[currentStep] || '';
+        els.input.placeholder = q.placeholder;
+        els.input.focus();
+        els.hintBox.classList.add('hidden');
+        
+        els.prev.classList.toggle('hidden', currentStep === 0);
+        const isLast = currentStep === questions.length - 1;
+        els.next.classList.toggle('hidden', isLast);
+        els.submit.classList.toggle('hidden', !isLast);
+        
+        checkBtnState();
     }
 
-    // 界面更新逻辑
-    function updateUI() {
-        const q = questions[currentStep];
-        questionText.innerText = `${currentStep + 1}. ${q.text}`;
-        stepIndicator.innerText = `问题 ${currentStep + 1} / ${questions.length}`;
-        
-        // 回显之前的答案
-        inputArea.value = answers[currentStep] || '';
-        inputArea.focus();
-
-        // 隐藏/显示 提示框
-        hintBox.classList.add('hidden');
-        hintContent.innerHTML = '';
-
-        // 按钮显示逻辑
-        if (currentStep === 0) {
-            prevBtn.classList.add('hidden');
-        } else {
-            prevBtn.classList.remove('hidden');
-        }
-
-        if (currentStep === questions.length - 1) {
-            nextBtn.classList.add('hidden');
-            submitBtn.classList.remove('hidden');
-        } else {
-            nextBtn.classList.remove('hidden');
-            submitBtn.classList.add('hidden');
-        }
-        
-        // 更新下一步按钮状态
-        const currentVal = inputArea.value.trim();
-        if(nextBtn) (nextBtn as HTMLButtonElement).disabled = currentVal === '';
-        if(submitBtn) (submitBtn as HTMLButtonElement).disabled = currentVal === '';
+    function checkBtnState() {
+        const empty = !els.input.value.trim();
+        els.next.disabled = empty;
+        els.submit.disabled = empty;
     }
 </script>
+
+<style is:global>
+    /* 全局基础样式 */
+    :root {
+        --bg: #f8f9fa;
+        --card-bg: #ffffff;
+        --primary: #2d3436;
+        --accent: #6c5ce7;
+        --text: #2d3436;
+        --gray: #b2bec3;
+        --border-radius: 16px;
+    }
+
+    body {
+        background-color: var(--bg);
+        font-family: 'Inter', system-ui, sans-serif;
+        color: var(--text);
+        line-height: 1.6;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    .header h1 { font-size: 2.5rem; margin-bottom: 10px; letter-spacing: -1px; }
+    .subtitle { color: var(--gray); font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* 卡片容器 */
+    .form-card, .report-wrapper {
+        background: var(--card-bg);
+        padding: 40px;
+        border-radius: var(--border-radius);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    /* 隐藏工具类 */
+    .hidden { display: none !important; }
+
+    /* 输入框与按钮 */
+    textarea {
+        width: 100%;
+        padding: 20px;
+        border: 2px solid #eee;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        resize: none;
+        transition: all 0.3s;
+        margin: 20px 0;
+        font-family: inherit;
+    }
+    textarea:focus { outline: none; border-color: var(--primary); }
+
+    .nav-buttons { display: flex; gap: 10px; margin-top: 20px; }
+    .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        flex: 1;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn.primary { background: var(--primary); color: white; }
+    .btn.secondary { background: #eee; color: #666; }
+    .btn.accent { background: var(--accent); color: white; }
+
+    /* 提示框 */
+    .hint-wrapper { margin: 10px 0; }
+    .hint-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.9rem; }
+    .hint-box { background: #f0f0ff; padding: 15px; border-radius: 8px; margin-top: 10px; font-size: 0.95rem; color: #555; }
+
+    /* ==========================================
+       ★ 重点：新版报告的 CSS 样式
+       这里对应 API 返回的 HTML Class
+       ========================================== */
+    
+    .report-container { animation: fadeIn 0.8s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .step-section { margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px solid #eee; }
+    .step-section:last-child { border-bottom: none; }
+
+    .report-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .section-intro { color: #666; margin-bottom: 20px; }
+
+    /* 1. 关键词提取格栅 */
+    .keywords-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .keyword-col { background: #f8f9fa; padding: 20px; border-radius: 12px; }
+    .keyword-col h3 { font-size: 1.1rem; margin-bottom: 5px; color: #333; }
+    .keyword-col .subtitle { font-size: 0.8rem; color: #888; margin-bottom: 15px; }
+    .tags-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    
+    .tag-pill {
+        background: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        border: 1px solid #eee;
+    }
+    .keyword-col:nth-child(1) .tag-pill { color: #e17055; border-color: #fab1a0; } /* 价值观红 */
+    .keyword-col:nth-child(2) .tag-pill { color: #0984e3; border-color: #74b9ff; } /* 才能蓝 */
+    .keyword-col:nth-child(3) .tag-pill { color: #00b894; border-color: #55efc4; } /* 热情绿 */
+
+    .small-tip { font-size: 0.75rem; color: #636e72; margin-top: 10px; font-style: italic; }
+
+    /* 2. 计算公式盒子 */
+    .calc-box {
+        background: #2d3436;
+        color: white;
+        padding: 25px;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        text-align: center;
+        line-height: 1.8;
+    }
+    .math-item { border-bottom: 2px solid rgba(255,255,255,0.3); padding: 0 5px; }
+
+    /* 3. 过滤过程 (Pass/Fail) */
+    .filter-process { display: flex; flex-direction: column; gap: 15px; }
+    .filter-row {
+        padding: 15px;
+        border-radius: 10px;
+        border-left: 4px solid #ccc;
+    }
+    .filter-row.fail { background: #fff5f5; border-left-color: #fab1a0; }
+    .filter-row.pass { background: #f0fff4; border-left-color: #55efc4; }
+    
+    .filter-header { font-weight: 700; margin-bottom: 5px; }
+    .filter-reason { font-size: 0.9rem; color: #555; }
+
+    /* 4. 最终结论卡片 */
+    .final-card {
+        background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+        color: white;
+        padding: 30px;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
+    }
+    .final-statement { font-size: 1.5rem; font-weight: 800; margin: 20px 0; line-height: 1.4; }
+    .logic-summary { font-size: 0.9rem; opacity: 0.8; }
+
+    .laogao-notes {
+        margin-top: 30px;
+        background: #fff3cd;
+        padding: 20px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        color: #856404;
+    }
+    .laogao-notes ul { padding-left: 20px; margin: 10px 0; }
+
+    /* Loading 动画 */
+    .loading-state { text-align: center; padding: 40px; }
+    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
