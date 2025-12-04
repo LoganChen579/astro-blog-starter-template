@@ -3,11 +3,6 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="人生使用说明书 - 逻辑推演版">
-  <!-- 
-    ⚠️ 注意：所有的内容（包括 main, script, style）
-    都必须包裹在 Layout 标签内部！
-  -->
-  
   <main class="container">
     <header class="header">
       <h1>人生使用说明书</h1>
@@ -46,114 +41,97 @@ import Layout from '../layouts/Layout.astro';
   </main>
 
   <!-- 
-     ✅ 修正点：Script 必须放在 Layout 内部 
-     使用 is:inline 彻底避开 TypeScript 检查
+    ✅ 修正：
+    1. Script 放在 Layout 内部，保证 HTML 结构合法。
+    2. 移除 is:inline，让 Astro 进行标准处理。
   -->
-  <script is:inline>
-    (function() {
-        const questions = [
-            { id: 1, text: "你尊敬的人是谁？", placeholder: "老高提示：写下名字。不要管伟不伟大，想他身上的形容词。", hintPrompt: "我不知道写谁，引导我思考我想成为什么样的人。" },
-            { id: 2, text: "为什么尊敬他？/ 喜欢他什么地方？", placeholder: "核心题：这个形容词（如自由、自律、霸气）就是你的价值观。", hintPrompt: "引导我从‘人’抽象出‘品质’。" },
-            { id: 3, text: "青春期对你影响很大的事情？", placeholder: "那时候你对什么感到愤怒或无力？反面就是你的追求。", hintPrompt: "引导我回忆青春期的情绪。" },
-            { id: 4, text: "你觉得现在社会有什么不足？", placeholder: "你想改变世界哪里？那就是你的责任感所在。", hintPrompt: "引导我思考社会痛点。" },
-            { id: 5, text: "朋友觉得你看重什么？", placeholder: "直接问死党。旁观者清。", hintPrompt: "引导我从通过别人的视角看自己。" },
-            { id: 6, text: "给身边人的建议/不希望收到的建议？", placeholder: "你劝别人的话，就是你的原则。", hintPrompt: "引导我思考我的口头禅。" },
-            { id: 7, text: "目前人生最充实的经历？", placeholder: "哪件事做起来‘像呼吸一样自然’？", hintPrompt: "引导我寻找心流体验。" },
-            { id: 8, text: "最近一次不耐烦的事情？", placeholder: "★关键题：你觉得简单别人却做不好，这就是天赋。", hintPrompt: "引导我利用‘愤怒’挖掘天赋。" },
-            { id: 9, text: "问身边的人自己擅长什么？", placeholder: "不需要是大技能，可能只是‘善于倾听’或‘直觉准’。", hintPrompt: "引导我寻找无意识的习惯。" },
-            { id: 10, text: "抛开钱，你想做什么工作？", placeholder: "纯粹为了打发时间，你想干嘛？", hintPrompt: "引导我去除金钱滤镜。" },
-            { id: 11, text: "目前为止做成过的事情？", placeholder: "如果这题难答，写写你的缺点（如反应慢=专注）。", hintPrompt: "引导我把缺点转化为特点。" },
-            { id: 12, text: "愿意花钱去学的东西？", placeholder: "用钱包投票的最真实。", hintPrompt: "引导我看消费记录。" },
-            { id: 13, text: "书架/收藏夹里最多的内容？", placeholder: "你的注意力流向了哪里？", hintPrompt: "引导我检查信息摄入。" },
-            { id: 14, text: "曾经‘拯救’过你的内容？", placeholder: "低谷期是谁拉了你一把？", hintPrompt: "引导我寻找精神支柱。" },
-            { id: 15, text: "想要感谢的人或事？", placeholder: "感恩的源头藏着热情。", hintPrompt: "引导我思考感恩。" },
-            { id: 16, text: "你对这个世界有什么不满？", placeholder: "你想解决什么问题？（如：想让交通更顺畅）。", hintPrompt: "引导我思考宏大的愿望。" }
-        ];
+  <script>
+    // 定义题目数据
+    const questions = [
+        { id: 1, text: "你尊敬的人是谁？", placeholder: "老高提示：写下名字。不要管伟不伟大，想他身上的形容词。", hintPrompt: "我不知道写谁，引导我思考我想成为什么样的人。" },
+        { id: 2, text: "为什么尊敬他？/ 喜欢他什么地方？", placeholder: "核心题：这个形容词（如自由、自律、霸气）就是你的价值观。", hintPrompt: "引导我从‘人’抽象出‘品质’。" },
+        { id: 3, text: "青春期对你影响很大的事情？", placeholder: "那时候你对什么感到愤怒或无力？反面就是你的追求。", hintPrompt: "引导我回忆青春期的情绪。" },
+        { id: 4, text: "你觉得现在社会有什么不足？", placeholder: "你想改变世界哪里？那就是你的责任感所在。", hintPrompt: "引导我思考社会痛点。" },
+        { id: 5, text: "朋友觉得你看重什么？", placeholder: "直接问死党。旁观者清。", hintPrompt: "引导我从通过别人的视角看自己。" },
+        { id: 6, text: "给身边人的建议/不希望收到的建议？", placeholder: "你劝别人的话，就是你的原则。", hintPrompt: "引导我思考我的口头禅。" },
+        { id: 7, text: "目前人生最充实的经历？", placeholder: "哪件事做起来‘像呼吸一样自然’？", hintPrompt: "引导我寻找心流体验。" },
+        { id: 8, text: "最近一次不耐烦的事情？", placeholder: "★关键题：你觉得简单别人却做不好，这就是天赋。", hintPrompt: "引导我利用‘愤怒’挖掘天赋。" },
+        { id: 9, text: "问身边的人自己擅长什么？", placeholder: "不需要是大技能，可能只是‘善于倾听’或‘直觉准’。", hintPrompt: "引导我寻找无意识的习惯。" },
+        { id: 10, text: "抛开钱，你想做什么工作？", placeholder: "纯粹为了打发时间，你想干嘛？", hintPrompt: "引导我去除金钱滤镜。" },
+        { id: 11, text: "目前为止做成过的事情？", placeholder: "如果这题难答，写写你的缺点（如反应慢=专注）。", hintPrompt: "引导我把缺点转化为特点。" },
+        { id: 12, text: "愿意花钱去学的东西？", placeholder: "用钱包投票的最真实。", hintPrompt: "引导我看消费记录。" },
+        { id: 13, text: "书架/收藏夹里最多的内容？", placeholder: "你的注意力流向了哪里？", hintPrompt: "引导我检查信息摄入。" },
+        { id: 14, text: "曾经‘拯救’过你的内容？", placeholder: "低谷期是谁拉了你一把？", hintPrompt: "引导我寻找精神支柱。" },
+        { id: 15, text: "想要感谢的人或事？", placeholder: "感恩的源头藏着热情。", hintPrompt: "引导我思考感恩。" },
+        { id: 16, text: "你对这个世界有什么不满？", placeholder: "你想解决什么问题？（如：想让交通更顺畅）。", hintPrompt: "引导我思考宏大的愿望。" }
+    ];
 
+    // 所有的逻辑包裹在 DOMContentLoaded 中，防止找不到元素
+    document.addEventListener('DOMContentLoaded', () => {
         let currentStep = 0;
         let answers = new Array(questions.length).fill('');
-        
-        // 安全获取 DOM
-        const el = (id) => document.getElementById(id);
-        
-        const dom = {
-            step: el('step-indicator'),
-            qText: el('question-text'),
-            input: el('answer-input'),
-            prev: el('prev-btn'),
-            next: el('next-btn'),
-            submit: el('submit-btn'),
-            hintBtn: el('hint-btn'),
-            hintBox: el('hint-box'),
-            hintContent: el('hint-content'),
-            formSection: el('form-section'),
-            reportSection: el('report-section'),
-            reportContent: el('report-content'),
-            restartBtn: el('restart-btn')
+
+        // 获取 DOM 元素，使用 strict null checks 兼容写法
+        const els = {
+            step: document.getElementById('step-indicator'),
+            qText: document.getElementById('question-text'),
+            input: document.getElementById('answer-input') as HTMLTextAreaElement | null,
+            prev: document.getElementById('prev-btn') as HTMLButtonElement | null,
+            next: document.getElementById('next-btn') as HTMLButtonElement | null,
+            submit: document.getElementById('submit-btn') as HTMLButtonElement | null,
+            hintBtn: document.getElementById('hint-btn') as HTMLButtonElement | null,
+            hintBox: document.getElementById('hint-box'),
+            hintContent: document.getElementById('hint-content'),
+            formSection: document.getElementById('form-section'),
+            reportSection: document.getElementById('report-section'),
+            reportContent: document.getElementById('report-content'),
+            restartBtn: document.getElementById('restart-btn') as HTMLButtonElement | null
         };
 
-        function updateUI() {
-            if(!dom.step || !dom.qText || !dom.input) return;
-            
-            const q = questions[currentStep];
-            dom.step.innerText = `Question ${currentStep + 1} / ${questions.length}`;
-            dom.qText.innerText = q.text;
-            
-            dom.input.value = answers[currentStep] || '';
-            dom.input.placeholder = q.placeholder || '';
-            dom.input.focus();
+        // 初始化
+        updateUI();
 
-            if(dom.hintBox) dom.hintBox.classList.add('hidden');
-            
-            if(dom.prev) dom.prev.classList.toggle('hidden', currentStep === 0);
-            
-            const isLast = currentStep === questions.length - 1;
-            if(dom.next) dom.next.classList.toggle('hidden', isLast);
-            if(dom.submit) dom.submit.classList.toggle('hidden', !isLast);
-            
-            checkState();
-        }
+        // --- Event Listeners ---
 
-        function checkState() {
-            if(!dom.input) return;
-            const empty = !dom.input.value.trim();
-            if(dom.next) dom.next.disabled = empty;
-            if(dom.submit) dom.submit.disabled = empty;
-        }
-
-        // Event Listeners
-        if(dom.input) {
-            dom.input.addEventListener('input', (e) => {
-                answers[currentStep] = e.target.value;
+        // 输入框监听
+        if (els.input) {
+            els.input.addEventListener('input', (e) => {
+                const target = e.target as HTMLTextAreaElement;
+                answers[currentStep] = target.value;
                 checkState();
             });
         }
 
-        if(dom.next) {
-            dom.next.addEventListener('click', () => {
-                if(currentStep < questions.length - 1) {
+        // 下一步
+        if (els.next) {
+            els.next.addEventListener('click', () => {
+                if (currentStep < questions.length - 1) {
                     currentStep++;
                     updateUI();
                 }
             });
         }
 
-        if(dom.prev) {
-            dom.prev.addEventListener('click', () => {
-                if(currentStep > 0) {
+        // 上一步
+        if (els.prev) {
+            els.prev.addEventListener('click', () => {
+                if (currentStep > 0) {
                     currentStep--;
                     updateUI();
                 }
             });
         }
 
-        if(dom.hintBtn) {
-            dom.hintBtn.addEventListener('click', async () => {
+        // AI 提示按钮
+        if (els.hintBtn) {
+            els.hintBtn.addEventListener('click', async () => {
                 const q = questions[currentStep];
-                dom.hintBtn.disabled = true;
-                dom.hintBtn.innerText = "老高正在思考...";
-                if(dom.hintBox) dom.hintBox.classList.remove('hidden');
-                if(dom.hintContent) dom.hintContent.innerHTML = "正在连接思维库...";
+                if (els.hintBtn) {
+                    els.hintBtn.disabled = true;
+                    els.hintBtn.innerText = "老高正在思考...";
+                }
+                if (els.hintBox) els.hintBox.classList.remove('hidden');
+                if (els.hintContent) els.hintContent.innerText = "正在连接思维库...";
                 
                 try {
                     const res = await fetch('/api/ai', {
@@ -162,22 +140,26 @@ import Layout from '../layouts/Layout.astro';
                         body: JSON.stringify({ type: 'hint', prompt: q.hintPrompt })
                     });
                     const data = await res.json();
-                    if(dom.hintContent) dom.hintContent.innerText = data.reply;
+                    if (els.hintContent) els.hintContent.innerText = data.reply;
                 } catch(e) {
-                    if(dom.hintContent) dom.hintContent.innerText = "连接超时";
+                    if (els.hintContent) els.hintContent.innerText = "连接超时";
                 }
-                dom.hintBtn.disabled = false;
-                dom.hintBtn.innerText = "💡 没思路？呼叫老高";
+                
+                if (els.hintBtn) {
+                    els.hintBtn.disabled = false;
+                    els.hintBtn.innerText = "💡 没思路？呼叫老高";
+                }
             });
         }
 
-        if(dom.submit) {
-            dom.submit.addEventListener('click', async () => {
-                if(dom.formSection) dom.formSection.classList.add('hidden');
-                if(dom.reportSection) dom.reportSection.classList.remove('hidden');
+        // 提交报告
+        if (els.submit) {
+            els.submit.addEventListener('click', async () => {
+                if (els.formSection) els.formSection.classList.add('hidden');
+                if (els.reportSection) els.reportSection.classList.remove('hidden');
                 
-                if(dom.reportContent) {
-                    dom.reportContent.innerHTML = `
+                if (els.reportContent) {
+                    els.reportContent.innerHTML = `
                         <div class="loading-state">
                             <div class="spinner"></div>
                             <h3>正在进行逻辑推演...</h3>
@@ -199,21 +181,62 @@ import Layout from '../layouts/Layout.astro';
                         body: JSON.stringify({ type: 'report', history })
                     });
                     const data = await res.json();
-                    if(dom.reportContent) dom.reportContent.innerHTML = data.reply;
+                    if (els.reportContent) els.reportContent.innerHTML = data.reply;
                 } catch(e) {
-                    if(dom.reportContent) dom.reportContent.innerHTML = "<h3>生成失败，请重试。</h3>";
-                    if(dom.formSection) dom.formSection.classList.remove('hidden');
+                    if (els.reportContent) els.reportContent.innerHTML = "<h3>生成失败，请重试。</h3>";
+                    if (els.formSection) els.formSection.classList.remove('hidden');
                 }
             });
         }
 
-        if(dom.restartBtn) {
-            dom.restartBtn.addEventListener('click', () => location.reload());
+        // 重新测试
+        if (els.restartBtn) {
+            els.restartBtn.addEventListener('click', () => location.reload());
         }
 
-        // Init
-        updateUI();
-    })();
+        // --- Helper Functions ---
+
+        function updateUI() {
+            const q = questions[currentStep];
+            
+            if (els.step) els.step.innerText = `Question ${currentStep + 1} / ${questions.length}`;
+            if (els.qText) els.qText.innerText = q.text;
+            
+            if (els.input) {
+                els.input.value = answers[currentStep] || '';
+                els.input.placeholder = q.placeholder || '';
+                els.input.focus();
+            }
+
+            if (els.hintBox) els.hintBox.classList.add('hidden');
+            
+            if (els.prev) {
+                if (currentStep === 0) els.prev.classList.add('hidden');
+                else els.prev.classList.remove('hidden');
+            }
+            
+            const isLast = currentStep === questions.length - 1;
+            if (els.next) {
+                if (isLast) els.next.classList.add('hidden');
+                else els.next.classList.remove('hidden');
+            }
+            if (els.submit) {
+                if (!isLast) els.submit.classList.add('hidden');
+                else els.submit.classList.remove('hidden');
+            }
+            
+            checkState();
+        }
+
+        function checkState() {
+            if (!els.input) return;
+            const val = els.input.value.trim();
+            const empty = val === '';
+            
+            if (els.next) els.next.disabled = empty;
+            if (els.submit) els.submit.disabled = empty;
+        }
+    });
   </script>
 
   <style is:global>
