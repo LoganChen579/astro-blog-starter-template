@@ -4,7 +4,7 @@ on:
   # 当代码推送到 main 分支时触发
   push:
     branches: [ main ]
-  # 允许你在 Actions 标签页手动点击按钮触发
+  # 允许在 Actions 标签页手动点击按钮触发
   workflow_dispatch:
 
 permissions:
@@ -18,10 +18,17 @@ jobs:
     steps:
       - name: Checkout your repository using git
         uses: actions/checkout@v4
-      
+
+      # =================================================
+      # 🚑 紧急修复补丁：手动安装依赖
+      # 因为 package-lock.json 被删了，这里强制安装一次
+      # 这样服务器就不会因为找不到清单而报错了
+      # =================================================
+      - name: Install dependencies
+        run: npm install
+
       - name: Install, build, and upload your site
         uses: withastro/action@v2
-        # 这个官方动作会自动检测你的 Astro 项目并进行构建
 
   deploy:
     needs: build
