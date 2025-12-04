@@ -1,0 +1,438 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+---
+
+<!doctype html>
+<html lang="zh-cn">
+	<head>
+		<BaseHead title={`深度探索 | ${SITE_TITLE}`} description="基于八木仁平与老高理论的深度人生解析" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+        
+        <!-- 引入 Tailwind CSS (为了配合你提供的代码风格) -->
+        <script src="https://cdn.staticfile.net/tailwindcss/3.3.5/tailwind.min.js"></script>
+        
+		<style is:inline>
+            /* === 基础布局修正 === */
+            html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; background-color: #fdfbf7; }
+            
+            /* === 你提供的原生样式 === */
+            .fade-in { animation: fadeIn 0.6s ease-out; }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+            textarea { resize: vertical; }
+            .circle-card { transition: all 0.3s; }
+            .circle-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+            ::-webkit-scrollbar { width: 6px; }
+            ::-webkit-scrollbar-track { background: #f1f1f1; }
+            ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 3px; }
+            .modal-backdrop { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
+            .modal-content { animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+            @keyframes popIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+            /* 修复 Header 遮挡问题 */
+            .main-wrapper {
+                padding-top: 20px;
+                padding-bottom: 20px;
+                min-height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+            }
+		</style>
+	</head>
+	<body class="font-sans text-stone-800">
+
+        <!-- 这里的 fixed-bg 保留，保持全站风格统一 -->
+        <div style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; background: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1200&auto=format&fit=crop') no-repeat center center; background-size: cover; opacity: 0.3;"></div>
+
+        <div class="main-wrapper px-4">
+            <div class="max-w-3xl w-full bg-white/95 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-stone-200 flex flex-col" style="min-height: 85vh;">
+                
+                <!-- 顶部进度条 -->
+                <div class="w-full bg-stone-100 h-2">
+                    <div id="progress-bar" class="bg-stone-800 h-2 transition-all duration-500" style="width: 0%"></div>
+                </div>
+
+                <!-- 顶部标题栏 -->
+                <div class="p-6 border-b border-stone-100 bg-white/80 sticky top-0 z-30 shadow-sm flex justify-between items-center">
+                    <div>
+                        <a href="/" class="text-xl font-bold text-stone-800 tracking-tight hover:text-blue-600 transition">← 人生使用说明书</a>
+                        <p class="text-xs text-stone-500 mt-1 font-mono">LOGIC KERNEL: LAO GAO & YAGI JIMPEI</p>
+                    </div>
+                    <div class="flex gap-1">
+                        <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-blue-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                    </div>
+                </div>
+
+                <!-- 核心内容滚动区 -->
+                <div id="app" class="flex-1 p-6 overflow-y-auto pb-20 scroll-smooth relative">
+                    
+                    <!-- SCREEN 0: 欢迎/开始 -->
+                    <div id="step-0" class="fade-in h-full flex flex-col justify-center items-center text-center space-y-8 py-12">
+                        <div class="relative">
+                            <div class="text-7xl">🧬</div>
+                            <div class="absolute -bottom-2 -right-2 text-2xl">🗝️</div>
+                        </div>
+                        <div>
+                            <h2 class="text-3xl font-bold text-stone-800 mb-3">寻找出厂设置</h2>
+                            <p class="text-stone-500 text-sm leading-relaxed max-w-md mx-auto">
+                                我们将通过 16 个潜意识探针，<br>
+                                提取你的<span class="text-red-500 font-bold">价值观</span>、<span class="text-blue-500 font-bold">才能</span>与<span class="text-yellow-500 font-bold">热情</span>。<br>
+                                最后生成独属于你的“人生公式”。
+                            </p>
+                        </div>
+                        <div class="w-full max-w-xs space-y-4">
+                            <input type="text" id="user-name" placeholder="请输入你的名字" class="w-full p-4 bg-stone-50 border border-stone-200 rounded-xl text-center focus:border-stone-800 outline-none transition font-bold text-lg">
+                            <button onclick="start()" class="w-full bg-stone-800 text-white py-4 rounded-xl hover:bg-stone-900 transition font-bold shadow-lg text-lg tracking-wide">开始解析</button>
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 1: 问题表单 -->
+                    <div id="form-container" class="hidden fade-in">
+                        <div class="flex items-center gap-3 mb-8">
+                            <span id="chapter-badge" class="bg-stone-800 text-white px-3 py-1 rounded text-xs font-bold tracking-wider">PART 1</span>
+                            <div>
+                                <h2 id="chapter-title" class="text-2xl font-bold text-stone-800"></h2>
+                                <p id="section-desc" class="text-sm text-stone-500 mt-1"></p>
+                            </div>
+                        </div>
+                        <div id="questions-list" class="space-y-12"></div>
+                    </div>
+
+                    <!-- SCREEN 2: 加载动画 -->
+                    <div id="loading-screen" class="hidden h-full flex flex-col justify-center items-center text-center fade-in py-20">
+                        <div class="animate-spin text-5xl mb-6">⏳</div>
+                        <h3 class="text-2xl font-bold text-stone-800">正在连接潜意识...</h3>
+                        <div class="text-stone-500 text-sm mt-4 space-y-2 font-mono text-left inline-block">
+                            <p>Step 1: 提取关键词（寻找重复项）...</p>
+                            <p>Step 2: 填入三圆圈（价值观/才能/热情）...</p>
+                            <p>Step 3: 组合人生公式（造句）...</p>
+                            <p>Step 4: 匹配现实载体（职业）...</p>
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 3: 结果展示 -->
+                    <div id="result-screen" class="hidden fade-in space-y-10 pb-10">
+                        <div class="text-center border-b border-stone-100 pb-6">
+                            <h2 class="text-3xl font-bold text-stone-800">分析报告</h2>
+                            <p class="text-stone-500 text-sm mt-2">受测者: <span id="res-name" class="font-bold text-black text-lg"></span></p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="circle-card bg-red-50 p-5 rounded-2xl border border-red-100 text-center flex flex-col justify-between">
+                                <div class="text-xs font-black text-red-400 mb-2 tracking-widest uppercase">VALUES (指南针)</div>
+                                <div id="kw-values" class="text-lg font-bold text-red-900 leading-snug">...</div>
+                                <div class="text-[10px] text-red-300 mt-2">你的理想状态</div>
+                            </div>
+                            <div class="circle-card bg-blue-50 p-5 rounded-2xl border border-blue-100 text-center flex flex-col justify-between">
+                                <div class="text-xs font-black text-blue-400 mb-2 tracking-widest uppercase">TALENTS (手段)</div>
+                                <div id="kw-talents" class="text-lg font-bold text-blue-900 leading-snug">...</div>
+                                <div class="text-[10px] text-blue-300 mt-2">你的无意识习惯</div>
+                            </div>
+                            <div class="circle-card bg-yellow-50 p-5 rounded-2xl border border-yellow-100 text-center flex flex-col justify-between">
+                                <div class="text-xs font-black text-yellow-600 mb-2 tracking-widest uppercase">PASSION (领域)</div>
+                                <div id="kw-passion" class="text-lg font-bold text-yellow-900 leading-snug">...</div>
+                                <div class="text-[10px] text-yellow-500 mt-2">你愿意投入的地方</div>
+                            </div>
+                        </div>
+                        <div class="bg-stone-900 text-white p-8 rounded-3xl shadow-xl relative overflow-hidden">
+                            <div class="absolute top-0 right-0 text-8xl opacity-10 select-none">⚡</div>
+                            <h3 class="text-center text-stone-400 text-xs font-bold tracking-widest uppercase mb-6">YOUR LIFE FORMULA</h3>
+                            <div class="text-center space-y-6">
+                                <p class="text-lg md:text-xl leading-relaxed font-light text-stone-300">我想在 <span id="f-passion" class="text-yellow-400 font-bold border-b border-yellow-400/30 pb-1"></span> 的领域</p>
+                                <p class="text-lg md:text-xl leading-relaxed font-light text-stone-300">利用我的 <span id="f-talent" class="text-blue-400 font-bold border-b border-blue-400/30 pb-1"></span></p>
+                                <p class="text-2xl md:text-3xl leading-relaxed font-bold text-white mt-4">去实现 <span id="f-value" class="text-red-500 bg-white/10 px-3 py-1 rounded-lg"></span></p>
+                            </div>
+                        </div>
+                        <div class="bg-white border border-stone-200 p-6 rounded-2xl">
+                            <h3 class="font-bold text-stone-800 mb-4 flex items-center gap-2"><span class="text-xl">💼</span> 现实职业载体 (匹配结果)</h3>
+                            <p id="res-advice" class="text-sm text-stone-600 leading-loose whitespace-pre-line"></p>
+                        </div>
+                        <button onclick="location.reload()" class="w-full py-4 bg-stone-50 border border-stone-200 rounded-xl text-stone-500 text-sm hover:bg-stone-100 hover:text-stone-800 transition font-bold">重新测试</button>
+                    </div>
+                </div>
+
+                <!-- 底部导航栏 -->
+                <div id="footer-nav" class="hidden p-4 border-t border-stone-100 bg-white/90 sticky bottom-0 z-20 flex gap-3">
+                    <button onclick="prevSection()" id="prev-btn" class="flex-1 bg-white border border-stone-200 text-stone-600 py-3 rounded-xl hover:bg-stone-50 transition font-bold disabled:opacity-50">← 上一步</button>
+                    <button onclick="nextSection()" id="next-btn" class="flex-[2] bg-stone-800 text-white py-3 rounded-xl hover:bg-stone-700 transition font-bold shadow-lg">下一步 →</button>
+                </div>
+
+                <!-- 弹窗: 锦囊/AI建议 -->
+                <div id="hint-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center px-4">
+                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col modal-content max-h-[80vh]">
+                        <div class="p-6 border-b border-stone-100 flex justify-between items-center sticky top-0 bg-stone-50">
+                            <h3 class="text-lg font-bold text-stone-800 flex items-center gap-2"><span>💡</span> 思路锦囊</h3>
+                            <button onclick="closeHint()" class="text-stone-400 hover:text-stone-800 text-2xl leading-none">&times;</button>
+                        </div>
+                        <div class="p-6 overflow-y-auto space-y-6 text-sm text-stone-600 leading-relaxed">
+                            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                                <h4 class="font-bold text-yellow-700 mb-2 text-xs uppercase tracking-wider">老高核心语录</h4>
+                                <p id="modal-intent" class="text-yellow-900"></p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-stone-800 mb-2 text-xs uppercase tracking-wider">🎯 引导实操</h4>
+                                <p id="modal-guide" class="whitespace-pre-line"></p>
+                            </div>
+                            <div id="modal-ai-section" class="hidden border-t border-stone-100 pt-4">
+                                <h4 class="font-bold text-blue-600 mb-2 text-xs uppercase tracking-wider flex items-center gap-1"><span>🤖</span> AI 补充建议</h4>
+                                <p id="modal-ai-content" class="text-stone-700 whitespace-pre-line"></p>
+                            </div>
+                        </div>
+                        <div class="p-4 border-t border-stone-100 bg-stone-50 text-center">
+                            <button onclick="closeHint()" class="bg-stone-800 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-stone-700 transition w-full">我明白了</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <script is:inline>
+            // ============================================================
+            // ⚠️ 关键配置：请将此处替换为你绑定的 API 域名
+            // 例如: "https://api.mylaogao.top"
+            // ============================================================
+            const API_URL = "https://api.mylaogao.top"; 
+
+            function cleanText(text) {
+                if (!text) return "";
+                return text.replace(/<br\s*\/?>/gi, '\n').replace(/<\/li>/gi, '\n').replace(/<li>/gi, '• ').replace(/<[^>]+>/g, '').replace(/^\s*[\-\*]\s+/gm, '• ').trim();
+            }
+            function openHint(title, contentData) {
+                document.getElementById('hint-modal').classList.remove('hidden');
+                document.getElementById('modal-intent').innerText = cleanText(contentData.intent);
+                document.getElementById('modal-guide').innerText = cleanText(contentData.guide);
+                const aiSection = document.getElementById('modal-ai-section');
+                if (contentData.aiContent) {
+                    aiSection.classList.remove('hidden');
+                    document.getElementById('modal-ai-content').innerText = cleanText(contentData.aiContent);
+                } else { aiSection.classList.add('hidden'); }
+            }
+            function closeHint() { document.getElementById('hint-modal').classList.add('hidden'); }
+
+            const chapters = [
+                {
+                    id: "values", name: "价值观 (Values)", desc: "核心：你最看重什么？(用直觉，不要思考)",
+                    questions: [
+                        { q: "1. 你尊敬的人是谁？(★ 起点问题)", intent: "不要想太久，直觉是谁就是谁。范围无限宽。", guide: "别筛选，别管那个人够不够伟大。此时此刻你脑子里蹦出来的第一个名字是谁？" },
+                        { q: "2. 为什么尊敬他？/ 喜欢他什么地方？", intent: "名字不重要，重要的是‘为什么’。这些形容词（关键词），才是你真正的价值观。", guide: "具体点，他哪一点打动了你？是他打破了规则？还是他特别温柔？" },
+                        { q: "3. 青春期对你影响很大的事情是什么？", intent: "回想初中、高中时期，有没有什么事对你的世界观产生了巨大冲击？", guide: "那时候有没有让你觉得特别不公平的事？或者让你瞬间觉得‘我就要这样活’的时刻？" },
+                        { q: "4. 你觉得现在社会有什么不足的地方？", intent: "你觉得这个社会缺什么？", guide: "如果你有魔法能改变社会的一个现状，你会改什么？" },
+                        { q: "5. 在朋友眼里你是一个看中什么东西的人？", intent: "这一题，必须去问别人。", guide: "【强制执行】拿出手机，现在发给三个死党：‘你觉得我最看重什么？’" },
+                        { q: "6. 给身边人的建议？/ 不希望朋友给你什么样的建议？", intent: "你经常挂在嘴边劝别人的话是什么？", guide: "你是不是总忍不住想纠正别人某种毛病？" }
+                    ]
+                },
+                {
+                    id: "talents", name: "才能 (Talents)", desc: "核心：你觉得简单而别人觉得难的事",
+                    questions: [
+                        { q: "7. 目前人生最充实的经历是什么？", intent: "哪一段时间你觉得过得特别快？", guide: "什么时候你做事情会忘记看手机，忘记吃饭？" },
+                        { q: "8. 最近一次感到“不耐烦”的事情？(★挖掘天赋关键题)", intent: "你看见谁做事笨手笨脚的，让你很火大？你觉得简单但他做不好的那个事，就是你的才能。", guide: "具体是哪个环节让你看不下去？" },
+                        { q: "9. 问问身边的人，他们觉得你擅长什么？", intent: "才能是无意识的，问别人。", guide: "别人最常夸你的一句话是什么？ 是‘你真细心’还是‘你点子真多’？" },
+                        { q: "10. 如果放弃现在的工作，你特别想做的事情是什么？", intent: "如果没有钱的问题，你本能地想去干什么？", guide: "假设你中了彩票，玩腻了之后，你每天早上起来想去琢磨点什么事？" },
+                        { q: "11. 目前为止你做过最成功的事情是什么？", intent: "小事也行，只要是有了结果的事情。", guide: "从小到大，哪件事做完让你觉得自己‘挺行’的？" }
+                    ]
+                },
+                {
+                    id: "passion", name: "愿望和梦想 (Passion)", desc: "核心：真爱是愿意付出代价的",
+                    questions: [
+                        { q: "12. 什么事情就算花钱你也愿意去学？", intent: "真的热情是需要花代价的。", guide: "你第一反应是去报个什么班？" },
+                        { q: "13. 你的书架上(或浏览记录)有什么内容的书？", intent: "那些你‘买回来’的信息，暴露了你真正的好奇心。", guide: "打开你的购物软件或视频APP，你关注最多的那个分类是什么？" },
+                        { q: "14. 什么内容/知识曾经给你很大的帮助？", intent: "在你人生低谷的时候救过你？", guide: "如果你的房子着火了，记忆里只能保留一本书或一部电影的内容，你会选哪个？" },
+                        { q: "15. 你有想要感谢的人和事么？", intent: "那个让你产生感激之情的源头，通常连着你的热情。", guide: "闭上眼睛，谁的帮助让你现在想起来还心里暖暖的？" },
+                        { q: "16. 你对这个世界有什么不满么？", intent: "你希望这个世界哪里变得更好？", guide: "如果是神，你最想消灭世界上的什么东西？" }
+                    ]
+                }
+            ];
+
+            let currentSectionIdx = 0;
+            let userName = "";
+            let userAnswers = {};
+            chapters.forEach(c => { userAnswers[c.id] = new Array(c.questions.length).fill(""); });
+
+            function start() {
+                const name = document.getElementById('user-name').value.trim();
+                if (!name) return alert("请先输入你的名字");
+                userName = name;
+                document.getElementById('step-0').classList.add('hidden');
+                document.getElementById('form-container').classList.remove('hidden');
+                document.getElementById('footer-nav').classList.remove('hidden');
+                document.getElementById('footer-nav').classList.add('flex');
+                renderSection();
+            }
+
+            function renderSection() {
+                const section = chapters[currentSectionIdx];
+                const container = document.getElementById('questions-list');
+                container.innerHTML = ""; 
+                document.getElementById('chapter-badge').innerText = `PART ${currentSectionIdx + 1}`;
+                document.getElementById('chapter-title').innerText = section.name;
+                document.getElementById('section-desc').innerText = section.desc;
+                document.getElementById('progress-bar').style.width = `${((currentSectionIdx) / 3) * 100}%`;
+                const prevBtn = document.getElementById('prev-btn');
+                const nextBtn = document.getElementById('next-btn');
+                prevBtn.style.display = (currentSectionIdx === 0) ? 'none' : 'block';
+                nextBtn.innerText = (currentSectionIdx === chapters.length - 1) ? "✨ 生成分析报告" : "下一步 →";
+
+                section.questions.forEach((item, idx) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = "bg-stone-50 p-6 rounded-xl border border-stone-100 relative group hover:shadow-md transition duration-300";
+                    const savedValue = userAnswers[section.id][idx] || "";
+                    wrapper.innerHTML = `
+                        <div class="mb-3"><label class="block text-base font-bold text-stone-800">${item.q}</label></div>
+                        <textarea id="input-${idx}" rows="3" class="w-full bg-white p-4 border border-stone-200 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none transition text-sm text-stone-800 leading-relaxed" placeholder="请凭直觉回答..." onblur="saveSingleInput(${idx})">${savedValue}</textarea>
+                        <div class="flex flex-wrap justify-end gap-2 mt-3">
+                            <button onclick="handleHint(${idx})" class="text-xs flex items-center gap-1 px-3 py-1.5 bg-white border border-stone-200 rounded-full text-stone-500 hover:text-stone-900 hover:border-stone-400 transition shadow-sm"><span>🤖</span> 问问AI怎么写</button>
+                            <button onclick="handleRefine(${idx})" class="text-xs flex items-center gap-1 px-3 py-1.5 bg-white border border-stone-200 rounded-full text-stone-500 hover:text-blue-600 hover:border-blue-200 transition shadow-sm"><span>✨</span> 帮我润色</button>
+                        </div>`;
+                    container.appendChild(wrapper);
+                });
+                document.getElementById('app').scrollTo(0,0);
+            }
+
+            function saveSingleInput(idx) { userAnswers[chapters[currentSectionIdx].id][idx] = document.getElementById(`input-${idx}`).value; }
+            
+            function saveCurrentInputs() {
+                const sectionId = chapters[currentSectionIdx].id;
+                const inputs = document.querySelectorAll('#questions-list textarea');
+                inputs.forEach((input, idx) => { userAnswers[sectionId][idx] = input.value.trim(); });
+                return Array.from(inputs).some(input => input.value.trim() !== "");
+            }
+
+            function prevSection() { saveCurrentInputs(); if (currentSectionIdx > 0) { currentSectionIdx--; renderSection(); } }
+            
+            async function nextSection() {
+                if (!saveCurrentInputs()) return alert("这一页好像全是空的？请至少回答一个问题吧。");
+                if (currentSectionIdx < chapters.length - 1) { 
+                    currentSectionIdx++; renderSection(); 
+                } else { 
+                    document.getElementById('progress-bar').style.width = "100%"; 
+                    await submitData(); 
+                }
+            }
+
+            async function handleHint(idx) {
+                const btn = event.currentTarget;
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<span class="animate-spin">⏳</span> 翻阅说明书...`;
+                const section = chapters[currentSectionIdx];
+                const qData = section.questions[idx];
+                
+                try {
+                    const res = await fetch(API_URL, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ 
+                            action: 'hint', 
+                            context: section.name, 
+                            data: { 
+                                question: qData.q, 
+                                theory_context: `【老高语录/原意】：${qData.intent}\n【引导实操】：${qData.guide}\n\n请基于以上逻辑，用老高的口吻（鼓励、直接、打破常规）简短地引导用户回答这道题。不要提及其他问题。\n\n【重要格式要求】：请只返回纯文本，不要使用HTML标签。` 
+                            } 
+                        })
+                    });
+                    const json = await res.json();
+                    openHint('💡 思路锦囊', { intent: qData.intent, guide: qData.guide, aiContent: json.data });
+                } catch (e) { 
+                    console.error(e);
+                    openHint('💡 思路锦囊', { intent: qData.intent, guide: qData.guide }); 
+                }
+                btn.innerHTML = originalHtml;
+            }
+
+            async function handleRefine(idx) {
+                const inputEl = document.getElementById(`input-${idx}`);
+                const val = inputEl.value.trim();
+                if (!val) return alert("先写点东西，我才能帮你润色哦");
+                const btn = event.currentTarget;
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<span class="animate-spin">✨</span> 优化中...`;
+                try {
+                    const res = await fetch(API_URL, { 
+                        method: "POST", 
+                        headers: { "Content-Type": "application/json" }, 
+                        body: JSON.stringify({ action: 'refine', data: { text: val } }) 
+                    });
+                    const json = await res.json();
+                    if (json.data) { inputEl.value = json.data; saveSingleInput(idx); }
+                } catch(e) { alert("连接超时，请检查网络或API地址配置"); }
+                btn.innerHTML = originalHtml;
+            }
+
+            // 补全了你代码里断掉的部分
+            async function submitData() {
+                document.getElementById('form-container').classList.add('hidden');
+                document.getElementById('footer-nav').classList.add('hidden');
+                document.getElementById('loading-screen').classList.remove('hidden');
+                
+                const analysisInstruction = `你是一位精通八木仁平“自我认知模型”的职业规划大师（基于老高视频理论）。请阅读用户的16个问题的回答，深度分析。
+                
+                任务：
+                1. 从回答中提取【Values 价值观】、【Talents 才能】、【Passion 热情】的关键词。
+                2. 组合成一个人生公式句子。
+                3. 给出具体的职业或行动建议。
+                
+                【重要】：请严格返回 JSON 格式，不要包含 markdown 标记。格式如下：
+                {
+                    "values": "关键词1, 关键词2",
+                    "talents": "关键词1, 关键词2",
+                    "passion": "关键词1, 关键词2",
+                    "formula_sentence": {
+                        "passion": "xxx领域",
+                        "talent": "xxx手段",
+                        "value": "xxx目的"
+                    },
+                    "advice": "一段详细的职业或行动建议..."
+                }`;
+
+                try {
+                    const res = await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            action: 'analyze',
+                            user_name: userName,
+                            answers: userAnswers,
+                            system_prompt: analysisInstruction
+                        })
+                    });
+                    const json = await res.json();
+                    const result = json.data; // 假设 API 返回结构
+
+                    // 渲染结果
+                    document.getElementById('loading-screen').classList.add('hidden');
+                    document.getElementById('result-screen').classList.remove('hidden');
+                    
+                    document.getElementById('res-name').innerText = userName;
+                    document.getElementById('kw-values').innerText = result.values || "未识别";
+                    document.getElementById('kw-talents').innerText = result.talents || "未识别";
+                    document.getElementById('kw-passion').innerText = result.passion || "未识别";
+                    
+                    if(result.formula_sentence) {
+                        document.getElementById('f-passion').innerText = result.formula_sentence.passion || "...";
+                        document.getElementById('f-talent').innerText = result.formula_sentence.talent || "...";
+                        document.getElementById('f-value').innerText = result.formula_sentence.value || "...";
+                    }
+                    
+                    document.getElementById('res-advice').innerText = result.advice || "AI 分析暂时不可用，请检查 API 返回。";
+
+                } catch (e) {
+                    console.error(e);
+                    alert("生成报告失败。这通常是因为：\n1. API 地址没改（还是默认的 mylaogao.top）\n2. 后端 Workers 没部署好\n\n现在将显示模拟结果用于演示。");
+                    
+                    // 演示用兜底数据
+                    document.getElementById('loading-screen').classList.add('hidden');
+                    document.getElementById('result-screen').classList.remove('hidden');
+                    document.getElementById('kw-values').innerText = "自由, 创造";
+                    document.getElementById('kw-talents').innerText = "逻辑分析, 洞察";
+                    document.getElementById('kw-passion').innerText = "互联网, 心理学";
+                    document.getElementById('f-passion').innerText = "心理学与科技结合";
+                    document.getElementById('f-talent').innerText = "深度分析能力";
+                    document.getElementById('f-value').innerText = "帮助他人觉醒";
+                    document.getElementById('res-advice').innerText = "演示模式：看起来你非常适合做一个独立的咨询师或内容创作者。";
+                }
+            }
+        </script>
+	</body>
+</html>
