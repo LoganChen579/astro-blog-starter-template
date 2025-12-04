@@ -3,15 +3,17 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="人生使用说明书 - 逻辑推演版">
+  <!-- 
+    ⚠️ 注意：所有的内容（包括 main, script, style）
+    都必须包裹在 Layout 标签内部！
+  -->
+  
   <main class="container">
-    
-    <!-- 顶部标题 -->
     <header class="header">
       <h1>人生使用说明书</h1>
       <p class="subtitle">LOGIC KERNEL: DATA FILTERING & SYNTHESIS</p>
     </header>
 
-    <!-- 问答表单区域 -->
     <section id="form-section" class="form-card">
       <div class="progress-bar">
         <span id="step-indicator">Loading...</span>
@@ -19,15 +21,12 @@ import Layout from '../layouts/Layout.astro';
       
       <div class="question-box">
         <h2 id="question-text">...</h2>
-        
-        <!-- 提示区 -->
         <div class="hint-wrapper">
             <button id="hint-btn" class="hint-btn">💡 没思路？呼叫老高</button>
             <div id="hint-box" class="hint-box hidden">
                 <div class="hint-content" id="hint-content"></div>
             </div>
         </div>
-
         <textarea id="answer-input" rows="6" placeholder="..."></textarea>
         
         <div class="nav-buttons">
@@ -38,29 +37,21 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </section>
 
-    <!-- 报告生成区域 -->
     <section id="report-section" class="report-wrapper hidden">
-      <div id="report-content">
-        <!-- API 返回的 HTML 将会被注入到这里 -->
-      </div>
-      
+      <div id="report-content"></div>
       <div class="action-area">
         <button id="restart-btn" class="btn secondary">重新测试</button>
       </div>
     </section>
-
   </main>
-</Layout>
 
-<!-- 
-  ★ 关键修改：is:inline 
-  这告诉 Astro：不要检查、不要编译、不要打包这段代码。
-  直接原样输出到浏览器执行。
--->
-<script is:inline>
+  <!-- 
+     ✅ 修正点：Script 必须放在 Layout 内部 
+     使用 is:inline 彻底避开 TypeScript 检查
+  -->
+  <script is:inline>
     (function() {
-        // 题目配置
-        var questions = [
+        const questions = [
             { id: 1, text: "你尊敬的人是谁？", placeholder: "老高提示：写下名字。不要管伟不伟大，想他身上的形容词。", hintPrompt: "我不知道写谁，引导我思考我想成为什么样的人。" },
             { id: 2, text: "为什么尊敬他？/ 喜欢他什么地方？", placeholder: "核心题：这个形容词（如自由、自律、霸气）就是你的价值观。", hintPrompt: "引导我从‘人’抽象出‘品质’。" },
             { id: 3, text: "青春期对你影响很大的事情？", placeholder: "那时候你对什么感到愤怒或无力？反面就是你的追求。", hintPrompt: "引导我回忆青春期的情绪。" },
@@ -79,73 +70,67 @@ import Layout from '../layouts/Layout.astro';
             { id: 16, text: "你对这个世界有什么不满？", placeholder: "你想解决什么问题？（如：想让交通更顺畅）。", hintPrompt: "引导我思考宏大的愿望。" }
         ];
 
-        var currentStep = 0;
-        var answers = new Array(questions.length).fill('');
+        let currentStep = 0;
+        let answers = new Array(questions.length).fill('');
         
-        // 获取 DOM 元素
-        var stepText = document.getElementById('step-indicator');
-        var qText = document.getElementById('question-text');
-        var inputArea = document.getElementById('answer-input');
-        var prevBtn = document.getElementById('prev-btn');
-        var nextBtn = document.getElementById('next-btn');
-        var submitBtn = document.getElementById('submit-btn');
-        var hintBtn = document.getElementById('hint-btn');
-        var hintBox = document.getElementById('hint-box');
-        var hintContent = document.getElementById('hint-content');
-        var formSection = document.getElementById('form-section');
-        var reportSection = document.getElementById('report-section');
-        var reportContent = document.getElementById('report-content');
-        var restartBtn = document.getElementById('restart-btn');
+        // 安全获取 DOM
+        const el = (id) => document.getElementById(id);
+        
+        const dom = {
+            step: el('step-indicator'),
+            qText: el('question-text'),
+            input: el('answer-input'),
+            prev: el('prev-btn'),
+            next: el('next-btn'),
+            submit: el('submit-btn'),
+            hintBtn: el('hint-btn'),
+            hintBox: el('hint-box'),
+            hintContent: el('hint-content'),
+            formSection: el('form-section'),
+            reportSection: el('report-section'),
+            reportContent: el('report-content'),
+            restartBtn: el('restart-btn')
+        };
 
         function updateUI() {
-            if(!stepText || !qText || !inputArea) return;
+            if(!dom.step || !dom.qText || !dom.input) return;
             
-            var q = questions[currentStep];
-            stepText.innerText = 'Question ' + (currentStep + 1) + ' / ' + questions.length;
-            qText.innerText = q.text;
+            const q = questions[currentStep];
+            dom.step.innerText = `Question ${currentStep + 1} / ${questions.length}`;
+            dom.qText.innerText = q.text;
             
-            inputArea.value = answers[currentStep] || '';
-            inputArea.placeholder = q.placeholder || '';
-            inputArea.focus();
+            dom.input.value = answers[currentStep] || '';
+            dom.input.placeholder = q.placeholder || '';
+            dom.input.focus();
 
-            if(hintBox) hintBox.classList.add('hidden');
+            if(dom.hintBox) dom.hintBox.classList.add('hidden');
             
-            if(prevBtn) {
-                if(currentStep === 0) prevBtn.classList.add('hidden');
-                else prevBtn.classList.remove('hidden');
-            }
+            if(dom.prev) dom.prev.classList.toggle('hidden', currentStep === 0);
             
-            var isLast = currentStep === questions.length - 1;
-            if(nextBtn) {
-                if(isLast) nextBtn.classList.add('hidden');
-                else nextBtn.classList.remove('hidden');
-            }
-            if(submitBtn) {
-                if(!isLast) submitBtn.classList.add('hidden');
-                else submitBtn.classList.remove('hidden');
-            }
+            const isLast = currentStep === questions.length - 1;
+            if(dom.next) dom.next.classList.toggle('hidden', isLast);
+            if(dom.submit) dom.submit.classList.toggle('hidden', !isLast);
             
             checkState();
         }
 
         function checkState() {
-            if(!inputArea) return;
-            var val = inputArea.value.trim();
-            var empty = val === '';
-            if(nextBtn) nextBtn.disabled = empty;
-            if(submitBtn) submitBtn.disabled = empty;
+            if(!dom.input) return;
+            const empty = !dom.input.value.trim();
+            if(dom.next) dom.next.disabled = empty;
+            if(dom.submit) dom.submit.disabled = empty;
         }
 
-        // 事件绑定
-        if(inputArea) {
-            inputArea.addEventListener('input', function(e) {
+        // Event Listeners
+        if(dom.input) {
+            dom.input.addEventListener('input', (e) => {
                 answers[currentStep] = e.target.value;
                 checkState();
             });
         }
 
-        if(nextBtn) {
-            nextBtn.addEventListener('click', function() {
+        if(dom.next) {
+            dom.next.addEventListener('click', () => {
                 if(currentStep < questions.length - 1) {
                     currentStep++;
                     updateUI();
@@ -153,8 +138,8 @@ import Layout from '../layouts/Layout.astro';
             });
         }
 
-        if(prevBtn) {
-            prevBtn.addEventListener('click', function() {
+        if(dom.prev) {
+            dom.prev.addEventListener('click', () => {
                 if(currentStep > 0) {
                     currentStep--;
                     updateUI();
@@ -162,82 +147,76 @@ import Layout from '../layouts/Layout.astro';
             });
         }
 
-        if(hintBtn) {
-            hintBtn.addEventListener('click', function() {
-                var q = questions[currentStep];
-                hintBtn.disabled = true;
-                hintBtn.innerText = "老高正在思考...";
-                if(hintBox) hintBox.classList.remove('hidden');
-                if(hintContent) hintContent.innerHTML = "正在连接思维库...";
+        if(dom.hintBtn) {
+            dom.hintBtn.addEventListener('click', async () => {
+                const q = questions[currentStep];
+                dom.hintBtn.disabled = true;
+                dom.hintBtn.innerText = "老高正在思考...";
+                if(dom.hintBox) dom.hintBox.classList.remove('hidden');
+                if(dom.hintContent) dom.hintContent.innerHTML = "正在连接思维库...";
                 
-                fetch('/api/ai', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ type: 'hint', prompt: q.hintPrompt })
-                }).then(function(res) { return res.json(); })
-                .then(function(data) {
-                    if(hintContent) hintContent.innerText = data.reply;
-                    hintBtn.disabled = false;
-                    hintBtn.innerText = "💡 没思路？呼叫老高";
-                })
-                .catch(function() {
-                    if(hintContent) hintContent.innerText = "连接超时";
-                    hintBtn.disabled = false;
-                    hintBtn.innerText = "💡 没思路？呼叫老高";
-                });
+                try {
+                    const res = await fetch('/api/ai', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ type: 'hint', prompt: q.hintPrompt })
+                    });
+                    const data = await res.json();
+                    if(dom.hintContent) dom.hintContent.innerText = data.reply;
+                } catch(e) {
+                    if(dom.hintContent) dom.hintContent.innerText = "连接超时";
+                }
+                dom.hintBtn.disabled = false;
+                dom.hintBtn.innerText = "💡 没思路？呼叫老高";
             });
         }
 
-        if(submitBtn) {
-            submitBtn.addEventListener('click', function() {
-                if(formSection) formSection.classList.add('hidden');
-                if(reportSection) reportSection.classList.remove('hidden');
+        if(dom.submit) {
+            dom.submit.addEventListener('click', async () => {
+                if(dom.formSection) dom.formSection.classList.add('hidden');
+                if(dom.reportSection) dom.reportSection.classList.remove('hidden');
                 
-                if(reportContent) {
-                    reportContent.innerHTML = 
-                        '<div class="loading-state">' +
-                        '<div class="spinner"></div>' +
-                        '<h3>正在进行逻辑推演...</h3>' +
-                        '<p>1. 提取价值观/才能/热情关键词...</p>' +
-                        '<p>2. 缺点转化 & 天赋反转计算...</p>' +
-                        '<p>3. 合成职业选项 & 价值观过滤...</p>' +
-                        '</div>';
+                if(dom.reportContent) {
+                    dom.reportContent.innerHTML = `
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <h3>正在进行逻辑推演...</h3>
+                            <p>1. 提取价值观/才能/热情关键词...</p>
+                            <p>2. 缺点转化 & 天赋反转计算...</p>
+                            <p>3. 合成职业选项 & 价值观过滤...</p>
+                        </div>
+                    `;
                 }
 
-                var history = questions.map(function(q, i) {
-                    return { id: q.id, question: q.text, answer: answers[i] };
-                });
+                const history = questions.map((q, i) => ({
+                    id: q.id, question: q.text, answer: answers[i]
+                }));
 
-                fetch('/api/ai', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ type: 'report', history: history })
-                }).then(function(res) { return res.json(); })
-                .then(function(data) {
-                    if(reportContent) reportContent.innerHTML = data.reply;
-                })
-                .catch(function() {
-                    if(reportContent) reportContent.innerHTML = "<h3>生成失败，请重试。</h3>";
-                    if(formSection) formSection.classList.remove('hidden');
-                });
+                try {
+                    const res = await fetch('/api/ai', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ type: 'report', history })
+                    });
+                    const data = await res.json();
+                    if(dom.reportContent) dom.reportContent.innerHTML = data.reply;
+                } catch(e) {
+                    if(dom.reportContent) dom.reportContent.innerHTML = "<h3>生成失败，请重试。</h3>";
+                    if(dom.formSection) dom.formSection.classList.remove('hidden');
+                }
             });
         }
 
-        if(restartBtn) {
-            restartBtn.addEventListener('click', function() {
-                location.reload();
-            });
+        if(dom.restartBtn) {
+            dom.restartBtn.addEventListener('click', () => location.reload());
         }
 
-        // 初始化
+        // Init
         updateUI();
     })();
-</script>
+  </script>
 
-<style is:global>
-    /* 
-     * 样式表保持不变
-     */
+  <style is:global>
     :root {
         --bg: #f8f9fa;
         --card-bg: #ffffff;
@@ -247,61 +226,21 @@ import Layout from '../layouts/Layout.astro';
         --gray: #b2bec3;
         --border-radius: 16px;
     }
-
-    body {
-        background-color: var(--bg);
-        font-family: 'Inter', system-ui, sans-serif;
-        color: var(--text);
-        line-height: 1.6;
-    }
-
-    .container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 40px 20px;
-    }
-
-    .header {
-        text-align: center;
-        margin-bottom: 40px;
-    }
+    body { background-color: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); line-height: 1.6; }
+    .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+    .header { text-align: center; margin-bottom: 40px; }
     .header h1 { font-size: 2.5rem; margin-bottom: 10px; letter-spacing: -1px; }
     .subtitle { color: var(--gray); font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; }
-
-    /* 卡片 */
-    .form-card, .report-wrapper {
-        background: var(--card-bg);
-        padding: 40px;
-        border-radius: var(--border-radius);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    }
+    .form-card, .report-wrapper { background: var(--card-bg); padding: 40px; border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
     .hidden { display: none !important; }
-
-    textarea {
-        width: 100%;
-        padding: 20px;
-        border: 2px solid #eee;
-        border-radius: 12px;
-        font-size: 1.1rem;
-        resize: none;
-        margin: 20px 0;
-    }
+    textarea { width: 100%; padding: 20px; border: 2px solid #eee; border-radius: 12px; font-size: 1.1rem; resize: none; margin: 20px 0; }
     textarea:focus { outline: none; border-color: var(--primary); }
-
     .nav-buttons { display: flex; gap: 10px; margin-top: 20px; }
-    .btn {
-        padding: 12px 24px;
-        border-radius: 8px;
-        border: none;
-        font-weight: 600;
-        cursor: pointer;
-        flex: 1;
-    }
+    .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; flex: 1; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn.primary { background: var(--primary); color: white; }
     .btn.secondary { background: #eee; color: #666; }
     .btn.accent { background: var(--accent); color: white; }
-
     .hint-wrapper { margin: 10px 0; }
     .hint-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.9rem; }
     .hint-box { background: #f0f0ff; padding: 15px; border-radius: 8px; margin-top: 10px; font-size: 0.95rem; color: #555; }
@@ -311,27 +250,22 @@ import Layout from '../layouts/Layout.astro';
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .step-section { margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px solid #eee; }
     .report-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; }
-    
     .keywords-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
     .keyword-col { background: #f8f9fa; padding: 20px; border-radius: 12px; }
     .tag-pill { background: white; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; border: 1px solid #eee; display: inline-block; margin: 3px; }
     .keyword-col:nth-child(1) .tag-pill { color: #e17055; border-color: #fab1a0; }
     .keyword-col:nth-child(2) .tag-pill { color: #0984e3; border-color: #74b9ff; }
     .keyword-col:nth-child(3) .tag-pill { color: #00b894; border-color: #55efc4; }
-
     .calc-box { background: #2d3436; color: white; padding: 25px; border-radius: 12px; text-align: center; }
-    
     .filter-process { display: flex; flex-direction: column; gap: 15px; }
     .filter-row { padding: 15px; border-radius: 10px; border-left: 4px solid #ccc; }
     .filter-row.fail { background: #fff5f5; border-left-color: #fab1a0; }
     .filter-row.pass { background: #f0fff4; border-left-color: #55efc4; }
-    
     .final-card { background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; padding: 30px; border-radius: 16px; text-align: center; }
     .final-statement { font-size: 1.5rem; font-weight: 800; margin: 20px 0; }
-    
     .laogao-notes { margin-top: 30px; background: #fff3cd; padding: 20px; border-radius: 10px; font-size: 0.9rem; color: #856404; }
-    
     .loading-state { text-align: center; padding: 40px; }
     .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-</style>
+  </style>
+</Layout>
